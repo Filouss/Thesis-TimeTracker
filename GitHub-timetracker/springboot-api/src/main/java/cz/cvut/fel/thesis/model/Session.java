@@ -6,7 +6,11 @@ import java.util.Set;
 
 @Entity
 public class Session {
+
+
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column
@@ -15,8 +19,9 @@ public class Session {
     @Column
     private int duration;
 
-    @Column
-    private long issueID;
+//    tohle nepotrebuju asi kdyz je vztah s issue
+//    @Column
+//    private long issueID;
 
     @Column
     private String notes;

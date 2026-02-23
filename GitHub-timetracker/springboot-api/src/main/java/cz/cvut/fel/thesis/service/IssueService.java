@@ -19,10 +19,11 @@ public class IssueService {
     @Autowired
     private IssueDAO issueDao;
 
-    public List<GitHubIssueDTO> getIssues() {
+    public List<GitHubIssueDTO> getAssignedIssues() {
         IssueSearchResponseDTO searchResponse = github.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/search/issues")
+                        //change to assigned
                         .queryParam("q", "involves:@me")
                         .queryParam("per_page", 100)
                         .build()
@@ -41,4 +42,19 @@ public class IssueService {
         return searchResponse.items();
     }
 
+    public GitHubIssueDTO getIssue(int issueNumber, String repo, String owner) {
+        return github.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/repos/{owner}/{repo}/issues/{issueNumber}")
+                        .build(owner,repo,issueNumber)
+                )
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, resp ->
+                        resp.bodyToMono(String.class).map(body ->
+                                new RuntimeException("GitHub " + resp.statusCode() + " body: " + body)
+                        )
+                )
+                .bodyToMono(GitHubIssueDTO.class)
+                .block();
+    }
 }

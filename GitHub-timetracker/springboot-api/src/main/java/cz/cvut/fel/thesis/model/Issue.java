@@ -7,6 +7,7 @@ import java.util.Set;
 @Entity
 public class Issue {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column
@@ -42,5 +43,37 @@ public class Issue {
 
     public Long getId() {
         return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public int getIssueNumber() {
+        return issueNumber;
+    }
+
+    public void setIssueNumber(int issueNumber) {
+        this.issueNumber = issueNumber;
+    }
+
+    public Long getGitHub_ID() {
+        return GitHub_ID;
+    }
+
+    public void setGitHub_ID(Long gitHub_ID) {
+        GitHub_ID = gitHub_ID;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
     }
 }

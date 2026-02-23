@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record GitHubRepositoryDTO(
-        long id,
+//        Long id,
         String name,
         @JsonProperty("full_name") String fullName,
         GitHubUserDTO owner,
-        @JsonProperty("repository_url") String repositoryUrl
+        @JsonProperty("html_url") String repositoryUrl
 ) {
 }

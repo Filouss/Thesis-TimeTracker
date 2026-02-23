@@ -7,6 +7,7 @@ import java.util.Date;
 @Entity
 public class TimeBlock {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column

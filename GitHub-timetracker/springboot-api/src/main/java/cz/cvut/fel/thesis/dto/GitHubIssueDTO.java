@@ -16,10 +16,23 @@ public record GitHubIssueDTO(
         @JsonProperty("created_at") OffsetDateTime createdAt,
         @JsonProperty("updated_at") OffsetDateTime updatedAt,
         GitHubUserDTO assignee,
-//      tohle moyna nebude potreba kdyz to jen vyparsuju z url
-//        GitHubUserDTO creator,
         @JsonProperty("repository_url") String repoUrl,
         String url
 ) {
+    public String owner() {
+        return parseOwnerRepo()[0];
+    }
 
+    public String repoName() {
+        return parseOwnerRepo()[1];
+    }
+
+    private String[] parseOwnerRepo() {
+        // https://api.github.com/repos/{owner}/{repo}
+        String[] parts = repoUrl.split("/repos/");
+        if (parts.length != 2) {
+            throw new IllegalStateException("Invalid repository_url: " + repoUrl);
+        }
+        return parts[1].split("/");
+    }
 }

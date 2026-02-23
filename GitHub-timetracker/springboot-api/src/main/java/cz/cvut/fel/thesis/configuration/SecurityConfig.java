@@ -1,5 +1,7 @@
 package cz.cvut.fel.thesis.configuration;
 
+import cz.cvut.fel.thesis.service.GitHubOAuthService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,9 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    @Autowired
+    private GitHubOAuthService gitHubOAuthService;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -24,7 +29,11 @@ public class SecurityConfig {
                         .requestMatchers("/", "/error", "/webjars/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .oauth2Login(Customizer.withDefaults());
+                //add custom logic after oauth to create user in db
+                .oauth2Login(oauth -> oauth
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(gitHubOAuthService)
+                        ));
 
         return http.build();
     }

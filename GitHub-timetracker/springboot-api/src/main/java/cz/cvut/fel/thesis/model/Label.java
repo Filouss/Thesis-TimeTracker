@@ -7,6 +7,7 @@ import java.util.Set;
 @Entity
 public class Label {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column

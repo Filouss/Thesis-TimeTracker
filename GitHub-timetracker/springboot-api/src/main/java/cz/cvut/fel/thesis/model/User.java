@@ -8,11 +8,21 @@ import java.util.Set;
 @Entity
 @Table(name = "app_user")
 public class User {
+
+    public User(String username, Long gitHub_ID) {
+        this.username = username;
+        gitHubID = gitHub_ID;
+        sessions = new HashSet();
+        tracking = false;
+        pinnedIssueGithubIds = new HashSet();
+    }
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique=true)
-    private long GitHub_ID;
+    @Column(unique=true,name = "github_id")
+    private Long gitHubID;
 
     @Column
     private String username;
@@ -20,21 +30,27 @@ public class User {
     @OneToMany(mappedBy = "user")
     private Set<Session> sessions;
 
+    private boolean tracking;
+
     @ElementCollection
     @CollectionTable(
             name = "user_pinned_issues",
             joinColumns = @JoinColumn(name = "user_id"),
             uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "issue_github_id"})
     )
-    @Column(name = "issue_github_id", nullable = false)
+    @Column(name = "issue_github_id")
     private Set<Long> pinnedIssueGithubIds = new HashSet<>();
 
-    public long getGitHub_ID() {
-        return GitHub_ID;
+    public User() {
+
     }
 
-    public void setGitHub_ID(long gitHub_ID) {
-        GitHub_ID = gitHub_ID;
+    public Long getGitHubID() {
+        return gitHubID;
+    }
+
+    public void setGitHubID(long gitHubID) {
+        this.gitHubID = gitHubID;
     }
 
     public String getUsername() {
@@ -51,5 +67,9 @@ public class User {
 
     public Long getId() {
         return id;
+    }
+
+    public boolean isTracking() {
+        return tracking;
     }
 }

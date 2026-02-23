@@ -1,15 +1,11 @@
 package cz.cvut.fel.thesis.controller;
 
 import cz.cvut.fel.thesis.dto.GitHubIssueDTO;
-import cz.cvut.fel.thesis.model.Issue;
 import cz.cvut.fel.thesis.service.IssueService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -23,13 +19,12 @@ public class IssueController {
     @Autowired
     private WebClient github;
 
-
     @Autowired
     private IssueService issueService;
 
     @GetMapping()
     public ResponseEntity<List<GitHubIssueDTO>> fetchGitHubIssues() {
-        return ResponseEntity.ok(issueService.getIssues());
+        return ResponseEntity.ok(issueService.getAssignedIssues());
     }
 
     @GetMapping("/raw")
