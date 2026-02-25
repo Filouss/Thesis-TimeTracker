@@ -17,7 +17,7 @@ public class Issue {
     private int issueNumber;
 
     @Column(unique=true)
-    private Long GitHub_ID;
+    private Long GitHubID;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "issue")
     private Set<Session> sessions;
@@ -36,6 +36,18 @@ public class Issue {
             inverseJoinColumns = @JoinColumn(name = "label_id")
     )
     private Set<Label> labels;
+
+    public void setLabels(Set<Label> labels) {
+        this.labels = labels;
+    }
+
+    public Set<Label> getLabels() {
+        return labels;
+    }
+
+    public void setRepository(Repository repository) {
+        this.repository = repository;
+    }
 
     public void setId(Long id) {
         this.id = id;
@@ -61,12 +73,12 @@ public class Issue {
         this.issueNumber = issueNumber;
     }
 
-    public Long getGitHub_ID() {
-        return GitHub_ID;
+    public Long getGitHubID() {
+        return GitHubID;
     }
 
-    public void setGitHub_ID(Long gitHub_ID) {
-        GitHub_ID = gitHub_ID;
+    public void setGitHubID(Long gitHubID) {
+        GitHubID = gitHubID;
     }
 
     public State getState() {

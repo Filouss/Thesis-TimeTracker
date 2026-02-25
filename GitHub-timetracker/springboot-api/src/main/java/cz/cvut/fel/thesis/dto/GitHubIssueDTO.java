@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record GitHubIssueDTO(
@@ -17,7 +18,8 @@ public record GitHubIssueDTO(
         @JsonProperty("updated_at") OffsetDateTime updatedAt,
         GitHubUserDTO assignee,
         @JsonProperty("repository_url") String repoUrl,
-        String url
+        String url,
+        List<LabelDTO> labels
 ) {
     public String owner() {
         return parseOwnerRepo()[0];

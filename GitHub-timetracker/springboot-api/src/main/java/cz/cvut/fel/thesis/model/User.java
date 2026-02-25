@@ -32,6 +32,8 @@ public class User {
 
     private boolean tracking;
 
+    private Long activeSessionID;
+
     @ElementCollection
     @CollectionTable(
             name = "user_pinned_issues",
@@ -43,6 +45,22 @@ public class User {
 
     public User() {
 
+    }
+
+    public void setTracking(boolean tracking) {
+        this.tracking = tracking;
+    }
+
+    public Long getActiveSessionID() {
+        return activeSessionID;
+    }
+
+    public void setActiveSessionID(Long activeSessionID) {
+        this.activeSessionID = activeSessionID;
+    }
+
+    public Set<Session> getSessions() {
+        return sessions;
     }
 
     public Long getGitHubID() {
