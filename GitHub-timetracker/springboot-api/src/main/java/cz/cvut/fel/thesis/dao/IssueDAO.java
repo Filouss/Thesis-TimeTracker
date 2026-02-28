@@ -1,11 +1,10 @@
 package cz.cvut.fel.thesis.dao;
 
 import cz.cvut.fel.thesis.model.Issue;
-import cz.cvut.fel.thesis.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
 public interface IssueDAO extends JpaRepository<Issue, Long> {
-    Optional<Issue> findByGitHubID(Long githubID);
+    Optional<Issue> findByGithubId(Long githubID);
 }

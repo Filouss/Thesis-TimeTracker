@@ -5,6 +5,9 @@ import cz.cvut.fel.thesis.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Set;
+
 @Service
 public class UserService{
 
@@ -23,5 +26,9 @@ public class UserService{
         user = new User(username, githubId);
         userDAO.save(user);
         return user;
+    }
+
+    public Set<Long> getPinnedIssueIds(User user) {
+        return user.getPinnedIssueGithubIds();
     }
 }

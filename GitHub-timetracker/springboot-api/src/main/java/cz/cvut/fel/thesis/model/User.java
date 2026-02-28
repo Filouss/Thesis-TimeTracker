@@ -47,6 +47,10 @@ public class User {
 
     }
 
+    public Set<Long> getPinnedIssueGithubIds() {
+        return pinnedIssueGithubIds;
+    }
+
     public void setTracking(boolean tracking) {
         this.tracking = tracking;
     }

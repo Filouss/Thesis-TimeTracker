@@ -16,8 +16,8 @@ public class Issue {
     @Column
     private int issueNumber;
 
-    @Column(unique=true)
-    private Long GitHubID;
+    @Column(name = "github_id",unique=true)
+    private Long githubId;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "issue")
     private Set<Session> sessions;
@@ -36,6 +36,8 @@ public class Issue {
             inverseJoinColumns = @JoinColumn(name = "label_id")
     )
     private Set<Label> labels;
+
+    private int syncCommentsAmount;
 
     public void setLabels(Set<Label> labels) {
         this.labels = labels;
@@ -61,6 +63,10 @@ public class Issue {
         return title;
     }
 
+    public Repository getRepository() {
+        return repository;
+    }
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -73,12 +79,12 @@ public class Issue {
         this.issueNumber = issueNumber;
     }
 
-    public Long getGitHubID() {
-        return GitHubID;
+    public Long getGithubId() {
+        return githubId;
     }
 
-    public void setGitHubID(Long gitHubID) {
-        GitHubID = gitHubID;
+    public void setGithubId(Long gitHubID) {
+        githubId = gitHubID;
     }
 
     public State getState() {
@@ -87,5 +93,13 @@ public class Issue {
 
     public void setState(State state) {
         this.state = state;
+    }
+
+    public int getSyncCommentsAmount() {
+        return syncCommentsAmount;
+    }
+
+    public void setSyncCommentsAmount(int syncCommentsAmount) {
+        this.syncCommentsAmount = syncCommentsAmount;
     }
 }

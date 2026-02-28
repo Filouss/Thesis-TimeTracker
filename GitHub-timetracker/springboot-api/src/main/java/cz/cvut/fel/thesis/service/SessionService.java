@@ -1,16 +1,22 @@
 package cz.cvut.fel.thesis.service;
 
 import cz.cvut.fel.thesis.dao.*;
+import cz.cvut.fel.thesis.dto.CommentDTO;
 import cz.cvut.fel.thesis.dto.GitHubIssueDTO;
 import cz.cvut.fel.thesis.dto.LabelDTO;
 import cz.cvut.fel.thesis.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.NotActiveException;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -36,6 +42,9 @@ public class SessionService {
 
     @Autowired
     private IssueService issueService;
+
+    @Autowired
+    private WebClient github;
 
     @Transactional
     public void startSession(int issueNumber, String repo, String owner, User user) {
@@ -73,7 +82,7 @@ public class SessionService {
                 .orElseThrow(NotActiveException::new);
 
         TimeBlock tb = session.getMostRecentTimeBlock();
-        tb.setEndDate(Instant.now());
+        tb.setEndDate(LocalDateTime.now());
         timeBlockDAO.save(tb);
     }
 
@@ -89,7 +98,7 @@ public class SessionService {
 
     private void createTimeBlock(Session session) {
         TimeBlock timeBlock = new TimeBlock();
-        timeBlock.setStartDate(Instant.now());
+        timeBlock.setStartDate(LocalDateTime.now());
         timeBlock.setSession(session);
         timeBlockDAO.save(timeBlock);
     }
@@ -108,10 +117,10 @@ public class SessionService {
 
     private Issue getOrCreateIssue(int issueNumber, GitHubIssueDTO fetchedIssue, Repository repository, Set<Label> labels) {
         Issue issue = issueDAO
-                .findByGitHubID(fetchedIssue.id())
+                .findByGithubId(fetchedIssue.id())
                 .orElseGet(() -> {
                     Issue newIssue = new Issue();
-                    newIssue.setGitHubID(fetchedIssue.id());
+                    newIssue.setGithubId(fetchedIssue.id());
                     return newIssue;
                 });
 
@@ -124,6 +133,7 @@ public class SessionService {
         );
         issue.setRepository(repository);
         issue.setLabels(labels);
+        issue.setSyncCommentsAmount(0);
         return issueDAO.save(issue);
     }
 
@@ -156,6 +166,53 @@ public class SessionService {
             labels.add(labelDAO.save(label));
         }
         return labels;
+    }
+
+    public List<Session> getSessions(User user){
+        return sessionDAO.findByUser(user);
+    }
+
+    public void syncSession(Long sessionId, String notes, User user){
+        Session toSync = sessionDAO.findByIdAndUser(sessionId,user);
+        if (toSync.getIssue().getSyncCommentsAmount() < 3){
+            //add a comment
+            addSessionComment(toSync,notes);
+        } else if (toSync.getIssue().getSyncCommentsAmount() == 3 ) {
+            //aggregate to one comment
+        } else {
+            //edit aggregated comment
+        }
+        toSync.setNotes(notes);
+        toSync.setSynced(true);
+        sessionDAO.save(toSync);
+    }
+
+    private void addSessionComment(Session toSync, String notes) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("• ")
+                .append(toSync.getMostRecentTimeBlock().getStartDate().toLocalDate())
+                .append(" — ")
+                .append(toSync.getMostRecentTimeBlock().getStartDate().toLocalTime());
+        if (notes != null) {
+            sb.append(" — ").append(toSync.getNotes());
+        }
+        sb.append("\n");
+
+        github.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/repos/{owner}/{repo}/issues/{issueNumber}/comments")
+                        .build(toSync.getIssue().getRepository().getOwner(),toSync.getIssue().getRepository().getName() , toSync.getIssue().getIssueNumber())
+                )
+                .bodyValue(Map.of("body", sb.toString()))
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, resp ->
+                        resp.bodyToMono(String.class).map(body ->
+                                new RuntimeException("GitHub " + resp.statusCode() + " body: " + body)
+                        )
+                )
+                .bodyToMono(CommentDTO.class)
+                .block();
     }
 
 }

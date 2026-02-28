@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -41,12 +42,10 @@ public class Session {
     public Duration getDuration(){
         if (timeBlocks == null || timeBlocks.isEmpty()) return Duration.ZERO;
 
-        Instant now = Instant.now();
-
         return timeBlocks.stream()
                 .filter(tb -> tb.getStartDate() != null)
                 .map(tb -> {
-                    Instant endDate = tb.getEndDate() != null ? tb.getEndDate() : now;
+                    LocalDateTime endDate = tb.getEndDate() != null ? tb.getEndDate() : LocalDateTime.now();
                     return Duration.between(tb.getStartDate(), endDate);
                 })
                 .reduce(Duration.ZERO, Duration::plus);

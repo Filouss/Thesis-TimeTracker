@@ -1,8 +1,10 @@
 package cz.cvut.fel.thesis.service;
 
 import cz.cvut.fel.thesis.dao.IssueDAO;
+import cz.cvut.fel.thesis.dao.UserDAO;
 import cz.cvut.fel.thesis.dto.GitHubIssueDTO;
 import cz.cvut.fel.thesis.dto.IssueSearchResponseDTO;
+import cz.cvut.fel.thesis.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,9 @@ public class IssueService {
 
     @Autowired
     private IssueDAO issueDao;
+
+    @Autowired
+    private UserDAO userDAO;
 
     public List<GitHubIssueDTO> getAssignedIssues() {
         IssueSearchResponseDTO searchResponse = github.get()
@@ -56,5 +61,18 @@ public class IssueService {
                 )
                 .bodyToMono(GitHubIssueDTO.class)
                 .block();
+    }
+
+    public void pinIssue(int issueNumber, String repo, String owner, User user) {
+        GitHubIssueDTO issueDTO = getIssue(issueNumber, repo, owner);
+        //todo handle fetching out of auth scope issue and return the issue maybe for frontend
+        user.getPinnedIssueGithubIds().add(issueDTO.id());
+        userDAO.save(user);
+    }
+
+    public void unpinIssue(int issueNumber, String repo, String owner, User user) {
+        GitHubIssueDTO issueDTO = getIssue(issueNumber, repo, owner);
+        user.getPinnedIssueGithubIds().remove(issueDTO.id());
+        userDAO.save(user);
     }
 }
