@@ -7,5 +7,5 @@ public record SessionDTO (
     boolean synced,
     List<TimeBlockDTO> timeblocks,
     IssueDTO issue,
-    boolean active
+    boolean paused
 ) { }

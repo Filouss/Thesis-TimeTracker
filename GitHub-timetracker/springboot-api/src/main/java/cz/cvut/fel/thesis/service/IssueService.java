@@ -29,7 +29,7 @@ public class IssueService {
                 .uri(uriBuilder -> uriBuilder
                         .path("/search/issues")
                         //change to assigned
-                        .queryParam("q", "involves:@me")
+                        .queryParam("q", "assigned:@me")
                         .queryParam("per_page", 100)
                         .build()
                 )

@@ -6,18 +6,20 @@ import cz.cvut.fel.thesis.dto.GitHubIssueDTO;
 import cz.cvut.fel.thesis.dto.LabelDTO;
 import cz.cvut.fel.thesis.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Mono;
 
 import java.io.NotActiveException;
-import java.time.Instant;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class SessionService {
@@ -44,10 +46,21 @@ public class SessionService {
     private IssueService issueService;
 
     @Autowired
+    private SyncFormatService syncFormatService;
+
+    @Autowired
     private WebClient github;
 
     @Transactional
     public void startSession(int issueNumber, String repo, String owner, User user) {
+        if (user.isTracking()){
+            try {
+                endSession(user);
+            } catch (NotActiveException e) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "No active session");
+            }
+        }
+
         GitHubIssueDTO fetchedIssue = issueService.getIssue(issueNumber, repo, owner);
 
         Repository repository = getOrCreateRepository(fetchedIssue);
@@ -62,12 +75,11 @@ public class SessionService {
 
     @Transactional
     public void endSession(User user) throws NotActiveException {
-        stopSession(user);
+        pauseSession(user);
         Session session = sessionDAO
                 .findById(user.getActiveSessionID())
                 .orElseThrow(NotActiveException::new);
 
-        session.setActive(false);
         sessionDAO.save(session);
 
         user.setActiveSessionID(null);
@@ -76,14 +88,17 @@ public class SessionService {
     }
 
     @Transactional
-    public void stopSession(User user) throws NotActiveException {
+    public void pauseSession(User user) throws NotActiveException {
         Session session = sessionDAO
                 .findById(user.getActiveSessionID())
                 .orElseThrow(NotActiveException::new);
 
+        if (session.isPaused()){return;}
+        session.setPaused(true);
         TimeBlock tb = session.getMostRecentTimeBlock();
         tb.setEndDate(LocalDateTime.now());
         timeBlockDAO.save(tb);
+        sessionDAO.save(session);
     }
 
     @Transactional
@@ -92,6 +107,7 @@ public class SessionService {
                 .findById(user.getActiveSessionID())
                 .orElseThrow(NotActiveException::new);
 
+        if (!session.isPaused()){return;}
         createTimeBlock(session);
         sessionDAO.save(session);
     }
@@ -100,12 +116,14 @@ public class SessionService {
         TimeBlock timeBlock = new TimeBlock();
         timeBlock.setStartDate(LocalDateTime.now());
         timeBlock.setSession(session);
+        session.getTimeBlocks().add(timeBlock);
+        sessionDAO.save(session);
         timeBlockDAO.save(timeBlock);
     }
 
     private Session createSession(User user, Issue issue) {
         Session session = new Session();
-        session.setActive(true);
+        session.setPaused(false);
         session.setIssue(issue);
         session.setSynced(false);
         session.setUser(user);
@@ -133,7 +151,6 @@ public class SessionService {
         );
         issue.setRepository(repository);
         issue.setLabels(labels);
-        issue.setSyncCommentsAmount(0);
         return issueDAO.save(issue);
     }
 
@@ -154,7 +171,6 @@ public class SessionService {
 
         for (LabelDTO labelDTO : fetchedIssue.labels()){
             Label label = labelDAO
-                    //todo mozna predelat na hledani podle repa a jmena
                     .findByGitHubID(labelDTO.id())
                     .orElseGet(() -> {
                         Label newLabel = new Label();
@@ -174,45 +190,87 @@ public class SessionService {
 
     public void syncSession(Long sessionId, String notes, User user){
         Session toSync = sessionDAO.findByIdAndUser(sessionId,user);
-        if (toSync.getIssue().getSyncCommentsAmount() < 3){
+        Long commentId = toSync.getIssue().getGithubCommentId();
+        if (commentId == null){
             //add a comment
             addSessionComment(toSync,notes);
-        } else if (toSync.getIssue().getSyncCommentsAmount() == 3 ) {
-            //aggregate to one comment
         } else {
-            //edit aggregated comment
+            //edit existing comment
+            editSessionComment(toSync,notes, commentId);
         }
         toSync.setNotes(notes);
         toSync.setSynced(true);
         sessionDAO.save(toSync);
     }
 
-    private void addSessionComment(Session toSync, String notes) {
-        StringBuilder sb = new StringBuilder();
+    private void editSessionComment(Session toSync, String notes, Long commentId) {
+        toSync.setNotes(notes);
+        sessionDAO.save(toSync);
+        String body = syncFormatService.buildSessionComments(toSync.getIssue());
 
-        sb.append("• ")
-                .append(toSync.getMostRecentTimeBlock().getStartDate().toLocalDate())
-                .append(" — ")
-                .append(toSync.getMostRecentTimeBlock().getStartDate().toLocalTime());
-        if (notes != null) {
-            sb.append(" — ").append(toSync.getNotes());
+        if (commentId == null){
+            addSessionComment(toSync,notes);
+            return;
         }
-        sb.append("\n");
 
-        github.post()
+        try {
+            github.patch()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/repos/{owner}/{repo}/issues/{issueNumber}/comments/{commentId}")
+                            .build(toSync.getIssue().getRepository().getOwner(),toSync.getIssue().getRepository().getName() , toSync.getIssue().getIssueNumber(), commentId)
+                    )
+                    .bodyValue(Map.of("body",body))
+                    .retrieve()
+                    .onStatus(HttpStatusCode::isError, resp ->
+                            resp.bodyToMono(String.class).map(b ->
+                                    new RuntimeException("GitHub " + resp.statusCode() + " body: " + b)
+                            )
+                    )
+                    .bodyToMono(CommentDTO.class)
+                    .block();
+        } catch (WebClientResponseException.NotFound e) {
+            //comment deleted or inaccessible
+            //todo refactor to a method in webclient
+            github.post()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/repos/{owner}/{repo}/issues/{issueNumber}/comments")
+                            .build(toSync.getIssue().getRepository().getOwner(),toSync.getIssue().getRepository().getName() , toSync.getIssue().getIssueNumber())
+                    )
+                    .bodyValue(Map.of("body", body))
+                    .retrieve()
+                    .onStatus(HttpStatusCode::isError, resp ->
+                            resp.bodyToMono(String.class).map(b ->
+                                    new RuntimeException("GitHub " + resp.statusCode() + " body: " + b)
+                            )
+                    )
+                    .bodyToMono(CommentDTO.class)
+                    .block();
+        }
+    }
+
+
+    private void addSessionComment(Session toSync, String notes) {
+        Duration duration = toSync.getDuration();
+        String body = syncFormatService.buildNewComment(toSync, notes, duration);
+
+        CommentDTO commentDTO = github.post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/repos/{owner}/{repo}/issues/{issueNumber}/comments")
                         .build(toSync.getIssue().getRepository().getOwner(),toSync.getIssue().getRepository().getName() , toSync.getIssue().getIssueNumber())
                 )
-                .bodyValue(Map.of("body", sb.toString()))
+                .bodyValue(Map.of("body", body))
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, resp ->
-                        resp.bodyToMono(String.class).map(body ->
-                                new RuntimeException("GitHub " + resp.statusCode() + " body: " + body)
+                        resp.bodyToMono(String.class).map(b ->
+                                new RuntimeException("GitHub " + resp.statusCode() + " body: " + b)
                         )
                 )
                 .bodyToMono(CommentDTO.class)
                 .block();
+        if (commentDTO != null) {
+            toSync.getIssue().setGithubCommentId(commentDTO.id());
+            issueDAO.save(toSync.getIssue());
+        }
     }
 
 }

@@ -1,8 +1,8 @@
 package cz.cvut.fel.thesis.controller;
 
 import cz.cvut.fel.thesis.model.User;
-import cz.cvut.fel.thesis.service.IssueService;
 import cz.cvut.fel.thesis.service.UserService;
+import cz.cvut.fel.thesis.utils.CurrentUserProvider;
 import cz.cvut.fel.thesis.utils.GitHubIdConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -26,6 +25,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    private final CurrentUserProvider userProvider = new CurrentUserProvider();
 
     @GetMapping("/me")
     public Object me(@AuthenticationPrincipal OAuth2User user) {
@@ -43,7 +44,7 @@ public class UserController {
 
     @GetMapping("/pinnedIds")
     public ResponseEntity<Set<Long>> fetchPinnedIssues(@AuthenticationPrincipal OAuth2User oAuth2User) {
-        User user = userService.getUserByGitHubID(GitHubIdConverter.IdToLong(oAuth2User));
+        User user = userProvider.oauthToUser(oAuth2User);
         return new ResponseEntity<>(userService.getPinnedIssueIds(user), HttpStatus.OK);
     }
 

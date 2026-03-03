@@ -3,11 +3,12 @@ package cz.cvut.fel.thesis.controller;
 import cz.cvut.fel.thesis.dto.*;
 import cz.cvut.fel.thesis.model.Session;
 import cz.cvut.fel.thesis.model.User;
-import cz.cvut.fel.thesis.service.IssueService;
 import cz.cvut.fel.thesis.service.SessionService;
 import cz.cvut.fel.thesis.service.UserService;
-import cz.cvut.fel.thesis.utils.GitHubIdConverter;
+import cz.cvut.fel.thesis.utils.CurrentUserProvider;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -26,53 +27,32 @@ public class SessionController {
     @Autowired
     private SessionService sessionService;
 
-    @Autowired
-    private IssueService issueService;
+    private final CurrentUserProvider userProvider = new CurrentUserProvider();
 
     @PostMapping("/start")
-    public void startSession(@RequestBody IssueRequestData issueData, @AuthenticationPrincipal OAuth2User oAuth2User){
-        User user = userService.getUserByGitHubID(GitHubIdConverter.IdToLong(oAuth2User));
-        if (user == null) {
-            //todo handle with 401
-            throw new RuntimeException("User not found");
-        }
-        if (user.isTracking()){
-            try {
-                sessionService.endSession(user);
-            } catch (NotActiveException e) {
-                throw new RuntimeException(e);
-            }
-        }
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void startSession(@Valid @RequestBody IssueRequestData issueData, @AuthenticationPrincipal OAuth2User oAuth2User){
+        User user = userProvider.oauthToUser(oAuth2User);
         sessionService.startSession(issueData.issueNumber(), issueData.repo(), issueData.owner(), user);
-
     }
 
     @PostMapping("/end")
-    public void endSession(@AuthenticationPrincipal OAuth2User oAuth2User){
-        User user = userService.getUserByGitHubID(GitHubIdConverter.IdToLong(oAuth2User));
-        if (user == null) {
-            throw new RuntimeException("User not found");
-        }
-        try {
-            sessionService.endSession(user);
-        } catch (NotActiveException e) {
-            throw new RuntimeException(e);
-        }
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void endSession(@AuthenticationPrincipal OAuth2User oAuth2User) throws NotActiveException {
+        User user = userProvider.oauthToUser(oAuth2User);
+        sessionService.endSession(user);
     }
 
     @GetMapping("/tracking")
     public boolean isTracking(@AuthenticationPrincipal OAuth2User oAuth2User){
-        User user = userService.getUserByGitHubID(GitHubIdConverter.IdToLong(oAuth2User));
-        if(user == null){
-            throw new RuntimeException("User not found in DB");
-        }
+        User user = userProvider.oauthToUser(oAuth2User);
         return user.isTracking();
     }
 
 
     @GetMapping
     public ResponseEntity<List<SessionDTO>> getSessions(@AuthenticationPrincipal OAuth2User oAuth2User){
-        User user = userService.getUserByGitHubID(GitHubIdConverter.IdToLong(oAuth2User));
+        User user = userProvider.oauthToUser(oAuth2User);
         List<Session> sessions = sessionService.getSessions(user);
         List<SessionDTO> sessionDTOs = sessions.stream()
                 .map(session -> new SessionDTO(
@@ -97,14 +77,44 @@ public class SessionController {
                                                 label.getColorHEX()
                                         )).toList()
                         ),
-                        session.isActive()
+                        session.isPaused()
                 ))
                 .toList();
     return ResponseEntity.ok(sessionDTOs);
     }
 
-    public void syncSession(@RequestBody Long sessionId, String notes, @AuthenticationPrincipal OAuth2User oAuth2User){
-        User user = userService.getUserByGitHubID(GitHubIdConverter.IdToLong(oAuth2User));
-        sessionService.syncSession(sessionId, notes, user);
+    @PostMapping("/sync")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void syncSession(@RequestBody SyncSessionRequest syncReq, @AuthenticationPrincipal OAuth2User oAuth2User){
+        User user = userProvider.oauthToUser(oAuth2User);
+        sessionService.syncSession(syncReq.sessionId(), syncReq.notes(), user);
+    }
+
+    @PostMapping("/pause")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void pauseSession(@AuthenticationPrincipal OAuth2User oAuth2User) throws NotActiveException {
+        User user = userProvider.oauthToUser(oAuth2User);
+        sessionService.pauseSession(user);
+
+    }
+
+    @PostMapping("/resume")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resumeSession(@AuthenticationPrincipal OAuth2User oAuth2User) throws NotActiveException {
+        User user = userProvider.oauthToUser(oAuth2User);
+        sessionService.resumeSession(user);
+    }
+
+
+    //todo
+
+    @PostMapping("/{id}/delete")
+    public void deleteSession(@PathVariable Long id, @AuthenticationPrincipal OAuth2User oAuth2User){
+
+    }
+
+    @PostMapping
+    public void editSession(@AuthenticationPrincipal OAuth2User oAuth2User){
+
     }
 }

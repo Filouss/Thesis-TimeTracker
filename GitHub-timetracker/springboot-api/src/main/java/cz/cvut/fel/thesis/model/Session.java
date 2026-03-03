@@ -3,8 +3,8 @@ package cz.cvut.fel.thesis.model;
 import jakarta.persistence.*;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -15,11 +15,7 @@ public class Session {
     private Long id;
 
     @Column
-    private boolean active;
-
-//    tohle nepotrebuju asi kdyz je vztah s issue
-//    @Column
-//    private long issueID;
+    private boolean paused;
 
     @Column
     private String notes;
@@ -32,7 +28,7 @@ public class Session {
     private Issue issue;
 
     @OneToMany(mappedBy = "session")
-    private Set<TimeBlock> timeBlocks;
+    private Set<TimeBlock> timeBlocks = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -63,6 +59,18 @@ public class Session {
         return mostRecent;
     }
 
+    public LocalDateTime getCreatedAt(){
+        if (timeBlocks == null || timeBlocks.isEmpty()) return null;
+        TimeBlock oldest = null;
+        for (TimeBlock tb : timeBlocks) {
+            if (oldest == null ||
+                    tb.getStartDate().isBefore(oldest.getStartDate())) {
+                oldest = tb;
+            }
+        }
+        return oldest.getStartDate();
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -71,12 +79,12 @@ public class Session {
         return id;
     }
 
-    public boolean isActive() {
-        return active;
+    public boolean isPaused() {
+        return paused;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setPaused(boolean active) {
+        this.paused = active;
     }
 
     public String getNotes() {

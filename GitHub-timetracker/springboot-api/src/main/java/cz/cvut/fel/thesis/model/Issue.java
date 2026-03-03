@@ -37,7 +37,20 @@ public class Issue {
     )
     private Set<Label> labels;
 
-    private int syncCommentsAmount;
+    public Set<Session> getSessions() {
+        return sessions;
+    }
+
+    @Column(nullable = true)
+    private Long githubCommentId;
+
+    public Long getGithubCommentId() {
+        return githubCommentId;
+    }
+
+    public void setGithubCommentId(Long githubCommentId) {
+        this.githubCommentId = githubCommentId;
+    }
 
     public void setLabels(Set<Label> labels) {
         this.labels = labels;
@@ -95,11 +108,4 @@ public class Issue {
         this.state = state;
     }
 
-    public int getSyncCommentsAmount() {
-        return syncCommentsAmount;
-    }
-
-    public void setSyncCommentsAmount(int syncCommentsAmount) {
-        this.syncCommentsAmount = syncCommentsAmount;
-    }
 }
