@@ -22,7 +22,7 @@ public class GitHubOAuthService implements OAuth2UserService<OAuth2UserRequest, 
 
         Number idNum = oauthUser.getAttribute("id");
         Long githubId = idNum == null ? null : idNum.longValue();
-        String username = oauthUser.getAttribute("username");
+        String username = oauthUser.getAttribute("login");
 
         userService.findOrCreateAndGetUser(githubId, username);
 

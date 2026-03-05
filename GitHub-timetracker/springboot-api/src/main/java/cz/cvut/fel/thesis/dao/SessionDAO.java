@@ -10,5 +10,5 @@ import java.util.Optional;
 
 public interface SessionDAO extends JpaRepository<Session, Long> {
     List<Session> findByUser(User user);
-    Session findByIdAndUser(Long id, User user);
+    Optional<Session> findByIdAndUser(Long id, User user);
 }

@@ -1,9 +1,8 @@
 package cz.cvut.fel.thesis.service;
 
 import cz.cvut.fel.thesis.dao.*;
-import cz.cvut.fel.thesis.dto.CommentDTO;
-import cz.cvut.fel.thesis.dto.GitHubIssueDTO;
-import cz.cvut.fel.thesis.dto.LabelDTO;
+import cz.cvut.fel.thesis.dto.*;
+import cz.cvut.fel.thesis.exceptions.UnassignedIssueException;
 import cz.cvut.fel.thesis.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,15 +10,15 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Mono;
 
 import java.io.NotActiveException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class SessionService {
@@ -62,10 +61,16 @@ public class SessionService {
         }
 
         GitHubIssueDTO fetchedIssue = issueService.getIssue(issueNumber, repo, owner);
+        System.out.println("login " + user.getUsername() + " gh assignee "+ fetchedIssue.assignee().login());
+        if (fetchedIssue.assignee() == null ||
+                !fetchedIssue.assignee().login().equals(user.getUsername())) {
 
-        Repository repository = getOrCreateRepository(fetchedIssue);
+            throw new UnassignedIssueException(HttpStatus.BAD_REQUEST, "Can't start a session for an unassigned issue");
+        }
+
+        Repository repository = getOrCreateRepository(repo, owner);
         Set<Label> labels = getOrCreateLabels(fetchedIssue);
-        Issue issue = getOrCreateIssue(issueNumber, fetchedIssue, repository, labels);
+        Issue issue = issueService.getOrCreateIssue(issueNumber, fetchedIssue, repository, labels);
         Session session = createSession(user, issue);
         createTimeBlock(session);
         user.setTracking(true);
@@ -112,6 +117,85 @@ public class SessionService {
         sessionDAO.save(session);
     }
 
+    @Transactional
+    public void deleteSession(User user, Long sessionId) {
+        Session session = sessionDAO.findByIdAndUser(sessionId, user).orElse(null);
+        if (session == null){return;}
+        sessionDAO.delete(session);
+    }
+
+    @Transactional
+    public Session editSession(User user, Long sessionId, UpdateSessionRequest sessionUpdate) {
+        Session existingSession = sessionDAO.findByIdAndUser(sessionId, user).orElse(null);
+        UpdateIssueRequest updateIssue = sessionUpdate.issue();
+        if (existingSession == null){return null;};
+        existingSession.setNotes(sessionUpdate.notes());
+        Issue toSet = issueDAO.findByGithubId(sessionUpdate.issue().gitHubId()).orElse(null);
+        if (toSet != null){
+            existingSession.setIssue(toSet);
+        } else {
+            GitHubIssueDTO fetchedIssue = issueService.getIssue(updateIssue.issueNumber(), updateIssue.repoName(), updateIssue.repoOwner());
+            if (fetchedIssue.assignee() == null || !fetchedIssue.assignee().login().equals(user.getUsername())) {
+                throw new UnassignedIssueException(HttpStatus.BAD_REQUEST, "Can't create a session for an unassigned issue");
+            }
+            Repository repository = getOrCreateRepository(fetchedIssue.repoName(), fetchedIssue.repoOwnerFromUrl());
+            Set<Label> labels = getOrCreateLabels(fetchedIssue);
+            Issue toSave = issueService.getOrCreateIssue(updateIssue.issueNumber(),fetchedIssue,repository,labels);
+            existingSession.setIssue(toSave);
+        }
+        if (sessionUpdate.timeBlocks() != null){
+            replaceTimeBlocks(existingSession, sessionUpdate.timeBlocks());
+        }
+        return sessionDAO.save(existingSession);
+    }
+
+    private void replaceTimeBlocks(Session existingSession, List<UpdateTimeBlockRequest> updateTimeBlockRequests) {
+        // Existing blocks by id
+        Map<Long, TimeBlock> existingById = existingSession.getTimeBlocks().stream()
+                .filter(tb -> tb.getId() != null)
+                .collect(Collectors.toMap(TimeBlock::getId, Function.identity()));
+
+        // IDs we want to keep
+        Set<Long> keepIds = new HashSet<>();
+
+        //final set to add to session
+        Set<TimeBlock> finalBlocks = new HashSet<>();
+
+        for (UpdateTimeBlockRequest dto : updateTimeBlockRequests) {
+            if (dto.startDate() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "timeBlocks.startDate is required");
+            }
+            if (dto.endDate() != null && dto.endDate().isBefore(dto.startDate())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "timeBlocks.endDate must be >= startDate");
+            }
+
+            TimeBlock tb;
+
+            if (dto.id() == null) {
+                // CREATE new block
+                tb = new TimeBlock();
+            } else {
+                // UPDATE existing block
+                tb = existingById.get(dto.id());
+                if (tb == null) {
+                    // client sent an id that isn't in this session
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown timeBlock id: " + dto.id());
+                }
+                keepIds.add(dto.id());
+            }
+
+            tb.setStartDate(dto.startDate());
+            tb.setEndDate(dto.endDate());
+            tb.setSession(existingSession);
+
+            finalBlocks.add(tb);
+        }
+
+        // DELETE removed blocks
+        existingSession.getTimeBlocks().clear();
+        existingSession.getTimeBlocks().addAll(finalBlocks);
+    }
+
     private void createTimeBlock(Session session) {
         TimeBlock timeBlock = new TimeBlock();
         timeBlock.setStartDate(LocalDateTime.now());
@@ -133,37 +217,15 @@ public class SessionService {
         return session;
     }
 
-    private Issue getOrCreateIssue(int issueNumber, GitHubIssueDTO fetchedIssue, Repository repository, Set<Label> labels) {
-        Issue issue = issueDAO
-                .findByGithubId(fetchedIssue.id())
-                .orElseGet(() -> {
-                    Issue newIssue = new Issue();
-                    newIssue.setGithubId(fetchedIssue.id());
-                    return newIssue;
-                });
-
-        issue.setIssueNumber(issueNumber);
-        issue.setTitle(fetchedIssue.title());
-        issue.setState(
-                "open".equalsIgnoreCase(fetchedIssue.state())
-                        ? State.OPEN
-                        : State.CLOSED
-        );
-        issue.setRepository(repository);
-        issue.setLabels(labels);
-        return issueDAO.save(issue);
-    }
-
-    private Repository getOrCreateRepository(GitHubIssueDTO fetchedIssue) {
-        Repository repository = repositoryDAO
-                .findByOwnerAndName(fetchedIssue.owner(), fetchedIssue.repoName())
+    private Repository getOrCreateRepository(String repoName, String owner) {
+        return repositoryDAO
+                .findByOwnerAndName(owner, repoName)
                 .orElseGet(() -> {
                     Repository newRepo = new Repository();
-                    newRepo.setName(fetchedIssue.repoName());
-                    newRepo.setOwner(fetchedIssue.owner());
+                    newRepo.setName(repoName);
+                    newRepo.setOwner(owner);
                     return repositoryDAO.save(newRepo);
                 });
-        return repository;
     }
 
     private Set<Label> getOrCreateLabels(GitHubIssueDTO fetchedIssue) {
@@ -189,7 +251,8 @@ public class SessionService {
     }
 
     public void syncSession(Long sessionId, String notes, User user){
-        Session toSync = sessionDAO.findByIdAndUser(sessionId,user);
+        Session toSync = sessionDAO.findByIdAndUser(sessionId,user).orElse(null);
+        if (toSync == null){return;};
         Long commentId = toSync.getIssue().getGithubCommentId();
         if (commentId == null){
             //add a comment

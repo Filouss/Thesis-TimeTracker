@@ -17,11 +17,11 @@ public record GitHubIssueDTO(
         @JsonProperty("created_at") OffsetDateTime createdAt,
         @JsonProperty("updated_at") OffsetDateTime updatedAt,
         GitHubUserDTO assignee,
-        @JsonProperty("repository_url") String repoUrl,
         String url,
-        List<LabelDTO> labels
-) {
-    public String owner() {
+        List<LabelDTO> labels,
+        @JsonProperty("repository_url") String repoUrl
+        ) {
+    public String repoOwnerFromUrl() {
         return parseOwnerRepo()[0];
     }
 

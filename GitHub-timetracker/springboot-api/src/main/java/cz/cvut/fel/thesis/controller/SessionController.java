@@ -27,7 +27,8 @@ public class SessionController {
     @Autowired
     private SessionService sessionService;
 
-    private final CurrentUserProvider userProvider = new CurrentUserProvider();
+    @Autowired
+    private CurrentUserProvider userProvider;
 
     @PostMapping("/start")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -77,7 +78,8 @@ public class SessionController {
                                                 label.getColorHEX()
                                         )).toList()
                         ),
-                        session.isPaused()
+                        session.isPaused(),
+                        session.getNotes()
                 ))
                 .toList();
     return ResponseEntity.ok(sessionDTOs);
@@ -105,16 +107,20 @@ public class SessionController {
         sessionService.resumeSession(user);
     }
 
-
-    //todo
-
-    @PostMapping("/{id}/delete")
+    @DeleteMapping("/{id}/delete")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteSession(@PathVariable Long id, @AuthenticationPrincipal OAuth2User oAuth2User){
-
+        User user = userProvider.oauthToUser(oAuth2User);
+        sessionService.deleteSession(user, id);
     }
 
-    @PostMapping
-    public void editSession(@AuthenticationPrincipal OAuth2User oAuth2User){
-
+    @PutMapping("/{id}/update")
+    public ResponseEntity<SessionDTO> editSession(@AuthenticationPrincipal OAuth2User oAuth2User, @PathVariable Long id, @RequestBody UpdateSessionRequest updateSessionRequest){
+        User user = userProvider.oauthToUser(oAuth2User);
+        Session updatedSession = sessionService.editSession(user, id, updateSessionRequest);
+        if (updatedSession != null) {
+            return ResponseEntity.ok(SessionDTO.fromEntity(updatedSession));
+        }
+        return ResponseEntity.notFound().build();
     }
 }

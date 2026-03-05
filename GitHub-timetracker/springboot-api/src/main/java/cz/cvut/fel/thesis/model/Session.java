@@ -27,7 +27,7 @@ public class Session {
     @JoinColumn(name = "issue_id")
     private Issue issue;
 
-    @OneToMany(mappedBy = "session")
+    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TimeBlock> timeBlocks = new HashSet<>();
 
     @ManyToOne
@@ -69,6 +69,16 @@ public class Session {
             }
         }
         return oldest.getStartDate();
+    }
+
+    public void addTimeBlock(TimeBlock tb) {
+        timeBlocks.add(tb);
+        tb.setSession(this);
+    }
+
+    public void removeTimeBlock(TimeBlock tb) {
+        timeBlocks.remove(tb);
+        tb.setSession(null);
     }
 
     public void setId(Long id) {

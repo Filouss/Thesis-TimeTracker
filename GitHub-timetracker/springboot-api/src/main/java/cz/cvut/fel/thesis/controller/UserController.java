@@ -26,7 +26,8 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    private final CurrentUserProvider userProvider = new CurrentUserProvider();
+    @Autowired
+    private CurrentUserProvider userProvider;
 
     @GetMapping("/me")
     public Object me(@AuthenticationPrincipal OAuth2User user) {

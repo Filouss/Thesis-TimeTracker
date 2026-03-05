@@ -24,7 +24,8 @@ public class IssueController {
     @Autowired
     private IssueService issueService;
 
-    private final CurrentUserProvider userProvider = new CurrentUserProvider();
+    @Autowired
+    private CurrentUserProvider userProvider;
 
     @GetMapping()
     public ResponseEntity<List<GitHubIssueDTO>> fetchGitHubIssues() {
@@ -32,17 +33,15 @@ public class IssueController {
     }
 
     @PostMapping("/pin")
-    public ResponseEntity<?> pinIssue(@RequestBody IssueRequestData issueData, @AuthenticationPrincipal OAuth2User oAuth2User){
+    public ResponseEntity<GitHubIssueDTO> pinIssue(@RequestBody IssueRequestData issueData, @AuthenticationPrincipal OAuth2User oAuth2User){
         User user = userProvider.oauthToUser(oAuth2User);
-        issueService.pinIssue(issueData.issueNumber(),issueData.repo(),issueData.owner(),user);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(issueService.pinIssue(issueData.issueNumber(),issueData.repo(),issueData.owner(),user));
     }
 
     @PostMapping("/unpin")
-    public ResponseEntity<?> unpinIssue(@RequestBody IssueRequestData issueData, @AuthenticationPrincipal OAuth2User oAuth2User){
+    public ResponseEntity<GitHubIssueDTO> unpinIssue(@RequestBody IssueRequestData issueData, @AuthenticationPrincipal OAuth2User oAuth2User){
         User user = userProvider.oauthToUser(oAuth2User);
-        issueService.unpinIssue(issueData.issueNumber(),issueData.repo(),issueData.owner(),user);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(issueService.unpinIssue(issueData.issueNumber(),issueData.repo(),issueData.owner(),user));
     }
 
 }
