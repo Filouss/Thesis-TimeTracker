@@ -1,0 +1,7 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    /* Optional: prevents horizontal scroll if things get tight */
+    overflow-x: hidden; 
+    font-family: "Quicksand", sans-serif;
+}
