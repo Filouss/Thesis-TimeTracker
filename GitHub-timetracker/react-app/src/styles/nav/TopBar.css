@@ -6,7 +6,7 @@
 
 .topbar-container{
     display: flex;
-    width: 90%;
+    width: 95%;
     justify-content: space-between;
     border-bottom: 1px solid rgb(247, 247, 247);
     padding: 20px;
@@ -32,6 +32,11 @@
     transition: 0.2s;
     cursor: pointer;
     color: rgb(152, 219, 231);
+}
+
+.topbar-left-nav button.active, .topbar-right-nav button.active {
+    color: rgb(152, 219, 231);
+    border-bottom-color: rgb(152, 219, 231);
 }
 
 .topbar-container .topbar-logo{

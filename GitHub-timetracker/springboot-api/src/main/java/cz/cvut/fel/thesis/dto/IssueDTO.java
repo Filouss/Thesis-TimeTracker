@@ -9,7 +9,9 @@ public record IssueDTO(
         String title,
         int number,
         Long GitHubID,
-        List<LabelDTO> labels
+        List<LabelDTO> labels,
+        String repoName,
+        String repoOwner
 ) {
     public static IssueDTO fromEntity(Issue issue) {
         return new IssueDTO(
@@ -19,7 +21,9 @@ public record IssueDTO(
                 issue.getGithubId(),
                 issue.getLabels().stream()
                         .map(LabelDTO::fromEntity)
-                        .toList()
+                        .toList(),
+                issue.getRepository().getName(),
+                issue.getRepository().getOwner()
         );
     }
 }

@@ -1,0 +1,181 @@
+/* Matching your dark homepage theme */
+.issue-detail-container {
+  /* background-color: #121212; */
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 95%;
+  height: 95%;
+  padding: 20px 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 25px;
+}
+
+.issue-detail-container .issue-card {
+  max-height: calc(100vh - 200px);
+  overflow: hidden;
+}
+
+.issue-detail-container .description-box {
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.issue-detail-container .description-box p {
+  margin: 0;
+}
+
+.issue-detail-page{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    height: 100%;
+    min-height: 0;
+}
+
+.issue-detail-page .issue-detail-content-wrapper {
+  width: 100%;
+  /* padding: 0 20px; */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Card Styling */
+.issue-detail-container .issue-card {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  position: relative;
+  flex-grow: 2;
+}
+
+.issue-detail-container .card-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.issue-detail-container .repo-text { color: #888; margin-top: 5px; }
+
+.issue-detail-container .status-tag {
+  background: #21262d;
+  border: 1px solid #30363d;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  height: fit-content;
+  text-transform: capitalize;
+}
+
+.issue-detail-container .description-box {
+  flex-grow: 2;
+}
+
+.issue-detail-container .status-tag.open { color: #3fb950; border-color: #3fb950; }
+
+.issue-detail-container .description-box h4 { color: #8b949e; font-size: 14px; margin-bottom: 10px; }
+.issue-detail-container .description-box p { line-height: 1.6; color: #d1d5db; }
+
+.issue-detail-container .labels-row { display: flex; gap: 8px;}
+.issue-detail-container .label-pill {
+  background: #2d2d2d;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.issue-detail-container .meta-info {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #333;
+  font-size: 14px;
+  color: #8b949e;
+}
+
+/* Buttons and Hover Effects */
+.issue-detail-container .github-btn {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  background: transparent;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.issue-detail-container .history-btn,
+.issue-detail-container .start-tracking-btn,
+.issue-detail-container .tile-btn {
+  background: transparent;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.issue-detail-container .history-btn:hover,
+.issue-detail-container .start-tracking-btn:hover,
+.issue-detail-container .tile-btn:hover,
+.issue-detail-container .github-btn:hover {
+  border-color: rgb(106, 163, 173);
+  background: rgba(106, 163, 173, 0.15);
+  transform: translateY(-2px);
+}
+
+.issue-detail-container .footer-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 25px;
+  align-items: flex-end;
+}
+
+.issue-detail-container .history-btn, .issue-detail-container .start-tracking-btn {
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.issue-detail-container .history-btn,
+.issue-detail-container .start-tracking-btn {
+  border: 1px solid #444;
+  color: #fff;
+  background: transparent;
+}
+
+.issue-detail-container .sync-status-true { margin-top: 15px; font-size: 13px; color: #3fb950; }
+.issue-detail-container .sync-status-false {
+  margin-top: 15px; font-size: 13px; color: #cfac4b;
+}
+.issue-detail-container .time-display { margin-bottom: 10px; text-align: right; color: #8b949e; }
+.issue-detail-container .time-display span { color: #fff; font-weight: bold; }
+
+.back-button-wrapper{
+  padding-bottom: 10px;
+}
+
+.back-button-wrapper button{
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 15pt;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-button-wrapper button:hover{
+  color: rgb(152, 219, 231);
+  cursor: pointer;
+  transition: 0.2s;
+  transform: scale(1.1);
+}

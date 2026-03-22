@@ -6,13 +6,11 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 
 public record TimeBlockDTO(
-        Long id,
-        LocalDateTime start,
-        LocalDateTime end
+        Instant start,
+        Instant end
 ) {
     public static TimeBlockDTO fromEntity(TimeBlock tb) {
         return new TimeBlockDTO(
-                tb.getId(),
                 tb.getStartDate(),
                 tb.getEndDate()
         );

@@ -11,7 +11,7 @@
     <groupId>cz.cvut.fel.thesis</groupId>
     <artifactId>bachelor-thesis</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>HAM</name>
+    <name>timetracker</name>
     <description>REST API for Github timetracker</description>
     <url/>
     <licenses>

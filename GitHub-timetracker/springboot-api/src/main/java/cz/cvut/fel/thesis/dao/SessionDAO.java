@@ -1,5 +1,6 @@
 package cz.cvut.fel.thesis.dao;
 
+import cz.cvut.fel.thesis.model.Issue;
 import cz.cvut.fel.thesis.model.Label;
 import cz.cvut.fel.thesis.model.Session;
 import cz.cvut.fel.thesis.model.User;
@@ -11,4 +12,5 @@ import java.util.Optional;
 public interface SessionDAO extends JpaRepository<Session, Long> {
     List<Session> findByUser(User user);
     Optional<Session> findByIdAndUser(Long id, User user);
+    List<Session> findByIssueAndUser(Issue issue, User user);
 }

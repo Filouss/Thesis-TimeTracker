@@ -13,16 +13,16 @@ public class TimeBlock {
     private Long id;
 
     @Column
-    private LocalDateTime endDate;
+    private Instant endDate;
 
     @Column
-    private LocalDateTime startDate;
+    private Instant startDate;
 
     @ManyToOne
     @JoinColumn(name = "session_id")
     private Session session;
 
-    public LocalDateTime getEndDate() {
+    public Instant getEndDate() {
         return endDate;
     }
 
@@ -34,15 +34,15 @@ public class TimeBlock {
         this.session = session;
     }
 
-    public void setEndDate(LocalDateTime endDate) {
+    public void setEndDate(Instant endDate) {
         this.endDate = endDate;
     }
 
-    public LocalDateTime getStartDate() {
+    public Instant getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDateTime startDate) {
+    public void setStartDate(Instant startDate) {
         this.startDate = startDate;
     }
 

@@ -19,7 +19,10 @@ public record GitHubIssueDTO(
         GitHubUserDTO assignee,
         String url,
         List<LabelDTO> labels,
-        @JsonProperty("repository_url") String repoUrl
+        @JsonProperty("repository_url") String repoUrl,
+        Long timeTracked,
+        @JsonProperty("user") GitHubUserDTO user,
+        boolean allSynced
         ) {
     public String repoOwnerFromUrl() {
         return parseOwnerRepo()[0];
@@ -36,5 +39,25 @@ public record GitHubIssueDTO(
             throw new IllegalStateException("Invalid repository_url: " + repoUrl);
         }
         return parts[1].split("/");
+    }
+
+    public static GitHubIssueDTO withTimeTrackedAndSync(GitHubIssueDTO issueDTO, Long timeTracked, boolean allSynced) {
+        return new GitHubIssueDTO(
+                issueDTO.id(),
+                issueDTO.number(),
+                issueDTO.title(),
+                issueDTO.state(),
+                issueDTO.body(),
+                issueDTO.htmlUrl(),
+                issueDTO.createdAt(),
+                issueDTO.updatedAt(),
+                issueDTO.assignee(),
+                issueDTO.url(),
+                issueDTO.labels(),
+                issueDTO.repoUrl(),
+                timeTracked,
+                issueDTO.user(),
+                allSynced
+        );
     }
 }

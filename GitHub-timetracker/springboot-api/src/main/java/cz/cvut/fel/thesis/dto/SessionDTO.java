@@ -2,6 +2,7 @@ package cz.cvut.fel.thesis.dto;
 
 import cz.cvut.fel.thesis.model.Session;
 
+import java.time.ZoneId;
 import java.util.List;
 
 public record SessionDTO (
@@ -10,9 +11,18 @@ public record SessionDTO (
     List<TimeBlockDTO> timeblocks,
     IssueDTO issue,
     boolean paused,
-    String notes
+    String notes,
+    Long trackedSeconds
 ) {
     public static SessionDTO fromEntity(Session session){
+        Long trackedSeconds = session.getTimeBlocks().stream()
+                .mapToLong(tb -> {
+                    if (tb.getStartDate() == null) return 0L;
+                    if (tb.getEndDate() == null) return 0L;
+                    return java.time.Duration.between(tb.getStartDate(), tb.getEndDate()).getSeconds();
+                })
+                .sum();
+
         return new SessionDTO(
                 session.getId(),
                 session.isSynced(),
@@ -21,7 +31,8 @@ public record SessionDTO (
                         .toList(),
                 IssueDTO.fromEntity(session.getIssue()),
                 session.isPaused(),
-                session.getNotes()
+                session.getNotes(),
+                trackedSeconds
         );
     }
 }

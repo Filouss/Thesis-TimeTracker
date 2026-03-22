@@ -1,0 +1,202 @@
+.history-page{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.history-page-wrapper {
+  color: #ffffff;
+  height: 100%;
+  width: 95%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Layout */
+.history-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+ }
+
+ .history-row-container{
+  margin-bottom: 10px;
+  border-radius: 6px;
+  overflow: hidden; 
+  border: 1px solid #333;
+ }
+
+.history-list{
+  flex-grow: 1;
+  overflow-y: auto; /* This creates the internal scrollbar */
+  padding-right: 10px;
+  max-height: 600px;
+}
+
+history-list::-webkit-scrollbar {
+  width: 6px;
+  background: transparent;
+  color: #888;
+}
+.history-list::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 10px;
+}
+
+.page-title {
+  font-weight: 400;
+  color: #e0e0e0;
+}
+
+/* Table Header Style */
+.history-table-header {
+  display: grid;
+  grid-template-columns: 2.5fr 2fr 1.3fr 1fr 0.6fr 1.3fr;
+  padding: 10px 25px;
+  color: #bdbdbd;
+  font-size: 0.85rem;
+  border: 1px solid #333;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  border-bottom-color: rgb(106, 163, 173);
+}
+
+.history-row-notes {
+  background: #252525;
+  padding: 15px 25px;
+  border-top: 1px solid #333;
+  animation: slideDown 0.2s ease-out;
+}
+
+.notes-content strong {
+  color: #888;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.notes-content p {
+  margin-top: 8px;
+  color: #e0e0e0;
+  line-height: 1.5;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Row Card Style */
+.history-row-card {
+  display: grid;
+  grid-template-columns: 2.5fr 2fr 1.3fr 1fr 0.6fr 1.3fr;
+  align-items: center;
+  background-color: rgb(43, 42, 42);
+  border: none;
+  padding: 15px 25px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  
+  transition: transform 0.2s ease;
+  max-height: 60px;
+}
+
+.col-repo{
+  color: #888;
+}
+
+.col-actions{
+  display: flex;
+  gap: 20px;
+}
+
+.synced-true{
+  color: #2ecc71;
+}
+
+.synced-false{
+  color: yellow;
+}
+
+.history-row-card:hover {
+  border-color: #555555;
+  border-bottom-color: rgb(106, 163, 173);
+  background-color: rgb(53, 51, 51);
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.issue-title { font-weight: 500; margin-right: 8px; }
+.issue-num { color: rgb(106, 163, 173); font-size: 0.9rem; }
+.status-yes { color: #2ecc71; }
+.status-no {color: rgb(230, 56, 56);}
+
+/* Buttons */
+.edit-btn, .sync-btn {
+  background: transparent;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 15px;
+  transition: all 0.2s ease;
+}
+
+.edit-btn:hover, .sync-btn:hover{
+  border-color: rgb(106, 163, 173);
+  background-color: rgba(106, 163, 173, 0.2);
+  transform: translateY(-2px);
+}
+
+.sync-btn:disabled{
+  color: #555555;
+}
+
+
+.delete-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18pt;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  color: rgb(248, 86, 86);
+  display: flex;
+  align-items: center;
+}
+
+.delete-icon-btn:hover { 
+  opacity: 1;
+}
+
+/* Pagination Styling */
+.pagination-bar {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.page-num {
+  width: 35px;
+  height: 35px;
+  border: none;
+  border-bottom: 3px solid #888;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.page-num.active {
+  background: transparent;
+  color: rgb(106, 163, 173);
+  border-bottom: 3px solid rgb(106, 163, 173);
+  font-weight: bold;
+}
+
+.page-num:hover:not(.active) {
+  border-bottom-color: #d1d1d1;
+}

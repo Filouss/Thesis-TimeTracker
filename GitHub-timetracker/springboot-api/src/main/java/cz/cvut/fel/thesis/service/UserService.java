@@ -28,7 +28,7 @@ public class UserService{
         return user;
     }
 
-    public Set<Long> getPinnedIssueIds(User user) {
+    public Set<Long> getPinnedIssueGitHubIds(User user) {
         return user.getPinnedIssueGithubIds();
     }
 }

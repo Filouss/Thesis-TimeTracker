@@ -1,9 +1,9 @@
 package cz.cvut.fel.thesis.service;
 
 import cz.cvut.fel.thesis.dao.IssueDAO;
+import cz.cvut.fel.thesis.dao.SessionDAO;
 import cz.cvut.fel.thesis.dao.UserDAO;
 import cz.cvut.fel.thesis.dto.GitHubIssueDTO;
-import cz.cvut.fel.thesis.dto.IssueSearchResponseDTO;
 import cz.cvut.fel.thesis.exceptions.UnassignedIssueException;
 import cz.cvut.fel.thesis.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 
@@ -28,11 +28,15 @@ public class IssueService {
     @Autowired
     private UserDAO userDAO;
 
+    @Autowired
+    private SessionDAO sessionDAO;
+
     public List<GitHubIssueDTO> getAssignedIssues() {
         List<GitHubIssueDTO> searchResponse = github.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/issues")
                         .queryParam("filter", "assigned")
+                        .queryParam("state", "all")
                         .queryParam("per_page", 100)
                         .build()
                 )
@@ -107,4 +111,27 @@ public class IssueService {
         issue.setLabels(labels);
         return issueDAO.save(issue);
     }
+
+    public GitHubIssueDTO getIssueBySessionId(Long id) {
+        Session session = sessionDAO.findById(id).orElse(null);
+        if (session == null) {return null;}
+        Issue issue = session.getIssue();
+        if (issue == null) {return null;}
+        return getIssue(issue.getIssueNumber(), issue.getRepository().getName(), issue.getRepository().getOwner());
+    }
+
+    public Long getTimeTrackedForIssueInSec(Issue issue, User user) {
+        return sessionDAO.findByIssueAndUser(issue, user).stream()
+                .map(s -> s.getDuration().getSeconds())
+                .reduce(0L, Long::sum);
+    }
+
+    public Issue get(Long id) {
+        return issueDAO.findById(id).orElse(null);
+    }
+
+    public Issue getByGitHubID(Long githubId) {
+        return issueDAO.findByGithubId(githubId).orElse(null);
+    }
+
 }

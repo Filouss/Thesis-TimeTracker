@@ -1,9 +1,8 @@
 package cz.cvut.fel.thesis.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record UpdateTimeBlockRequest(
-        Long id,
-        LocalDateTime startDate,
-        LocalDateTime endDate
+        Instant start,
+        Instant end
 ) {}

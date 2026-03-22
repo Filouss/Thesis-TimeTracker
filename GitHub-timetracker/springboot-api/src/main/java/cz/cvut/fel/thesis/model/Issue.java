@@ -2,6 +2,7 @@ package cz.cvut.fel.thesis.model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -20,7 +21,7 @@ public class Issue {
     private Long githubId;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "issue")
-    private Set<Session> sessions;
+    private List<Session> sessions;
 
     @Column
     private State state;
@@ -37,7 +38,7 @@ public class Issue {
     )
     private Set<Label> labels;
 
-    public Set<Session> getSessions() {
+    public List<Session> getSessions() {
         return sessions;
     }
 

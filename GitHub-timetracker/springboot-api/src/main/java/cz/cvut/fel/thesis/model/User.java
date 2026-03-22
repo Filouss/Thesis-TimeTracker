@@ -2,7 +2,9 @@ package cz.cvut.fel.thesis.model;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -12,9 +14,9 @@ public class User {
     public User(String username, Long gitHub_ID) {
         this.username = username;
         gitHubID = gitHub_ID;
-        sessions = new HashSet();
+        sessions = new ArrayList<>();
         tracking = false;
-        pinnedIssueGithubIds = new HashSet();
+        pinnedIssueGithubIds = new HashSet<>();
     }
 
     @Id
@@ -28,7 +30,7 @@ public class User {
     private String username;
 
     @OneToMany(mappedBy = "user")
-    private Set<Session> sessions;
+    private List<Session> sessions;
 
     private boolean tracking;
 
@@ -63,7 +65,7 @@ public class User {
         this.activeSessionID = activeSessionID;
     }
 
-    public Set<Session> getSessions() {
+    public List<Session> getSessions() {
         return sessions;
     }
 

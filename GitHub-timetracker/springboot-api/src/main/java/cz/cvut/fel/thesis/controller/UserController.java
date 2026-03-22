@@ -46,7 +46,7 @@ public class UserController {
     @GetMapping("/pinnedIds")
     public ResponseEntity<Set<Long>> fetchPinnedIssues(@AuthenticationPrincipal OAuth2User oAuth2User) {
         User user = userProvider.oauthToUser(oAuth2User);
-        return new ResponseEntity<>(userService.getPinnedIssueIds(user), HttpStatus.OK);
+        return new ResponseEntity<>(userService.getPinnedIssueGitHubIds(user), HttpStatus.OK);
     }
 
 }

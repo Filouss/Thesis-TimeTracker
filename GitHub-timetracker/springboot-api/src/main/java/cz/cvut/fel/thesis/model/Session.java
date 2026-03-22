@@ -3,9 +3,10 @@ package cz.cvut.fel.thesis.model;
 import jakarta.persistence.*;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Session {
@@ -23,12 +24,15 @@ public class Session {
     @Column
     private boolean synced;
 
+    @Column
+    private boolean finished;
+
     @ManyToOne
     @JoinColumn(name = "issue_id")
     private Issue issue;
 
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<TimeBlock> timeBlocks = new HashSet<>();
+    private List<TimeBlock> timeBlocks = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -41,7 +45,7 @@ public class Session {
         return timeBlocks.stream()
                 .filter(tb -> tb.getStartDate() != null)
                 .map(tb -> {
-                    LocalDateTime endDate = tb.getEndDate() != null ? tb.getEndDate() : LocalDateTime.now();
+                    Instant endDate = tb.getEndDate() != null ? tb.getEndDate() : Instant.now();
                     return Duration.between(tb.getStartDate(), endDate);
                 })
                 .reduce(Duration.ZERO, Duration::plus);
@@ -59,7 +63,7 @@ public class Session {
         return mostRecent;
     }
 
-    public LocalDateTime getCreatedAt(){
+    public Instant getCreatedAt(){
         if (timeBlocks == null || timeBlocks.isEmpty()) return null;
         TimeBlock oldest = null;
         for (TimeBlock tb : timeBlocks) {
@@ -83,6 +87,14 @@ public class Session {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public void setFinished(boolean finished) {
+        this.finished = finished;
     }
 
     public Long getId() {
@@ -121,11 +133,11 @@ public class Session {
         this.issue = issue;
     }
 
-    public Set<TimeBlock> getTimeBlocks() {
+    public List<TimeBlock> getTimeBlocks() {
         return timeBlocks;
     }
 
-    public void setTimeBlocks(Set<TimeBlock> timeBlocks) {
+    public void setTimeBlocks(List<TimeBlock> timeBlocks) {
         this.timeBlocks = timeBlocks;
     }
 

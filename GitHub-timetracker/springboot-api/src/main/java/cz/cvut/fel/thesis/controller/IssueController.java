@@ -35,6 +35,7 @@ public class IssueController {
     @PostMapping("/pin")
     public ResponseEntity<GitHubIssueDTO> pinIssue(@RequestBody IssueRequestData issueData, @AuthenticationPrincipal OAuth2User oAuth2User){
         User user = userProvider.oauthToUser(oAuth2User);
+        System.out.println("pinnuju");
         return ResponseEntity.ok(issueService.pinIssue(issueData.issueNumber(),issueData.repo(),issueData.owner(),user));
     }
 

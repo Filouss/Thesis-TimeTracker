@@ -1,8 +1,10 @@
 package cz.cvut.fel.thesis.controller;
 
 import cz.cvut.fel.thesis.dto.*;
+import cz.cvut.fel.thesis.model.Issue;
 import cz.cvut.fel.thesis.model.Session;
 import cz.cvut.fel.thesis.model.User;
+import cz.cvut.fel.thesis.service.IssueService;
 import cz.cvut.fel.thesis.service.SessionService;
 import cz.cvut.fel.thesis.service.UserService;
 import cz.cvut.fel.thesis.utils.CurrentUserProvider;
@@ -15,6 +17,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.NotActiveException;
+import java.time.ZoneId;
 import java.util.List;
 
 @RestController
@@ -30,6 +33,9 @@ public class SessionController {
     @Autowired
     private CurrentUserProvider userProvider;
 
+    @Autowired
+    private IssueService issueService;
+
     @PostMapping("/start")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void startSession(@Valid @RequestBody IssueRequestData issueData, @AuthenticationPrincipal OAuth2User oAuth2User){
@@ -39,9 +45,9 @@ public class SessionController {
 
     @PostMapping("/end")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void endSession(@AuthenticationPrincipal OAuth2User oAuth2User) throws NotActiveException {
+    public void endSession(@AuthenticationPrincipal OAuth2User oAuth2User, @RequestBody NotesDTO noteDto) throws NotActiveException {
         User user = userProvider.oauthToUser(oAuth2User);
-        sessionService.endSession(user);
+        sessionService.endSession(user, noteDto.notes());
     }
 
     @GetMapping("/tracking")
@@ -61,7 +67,6 @@ public class SessionController {
                         session.isSynced(),
                         session.getTimeBlocks().stream()
                                 .map(tb -> new TimeBlockDTO(
-                                        tb.getId(),
                                         tb.getStartDate(),
                                         tb.getEndDate()
                                 ))
@@ -76,10 +81,19 @@ public class SessionController {
                                                 label.getId(),
                                                 label.getTitle(),
                                                 label.getColorHEX()
-                                        )).toList()
+                                        )).toList(),
+                                session.getIssue().getRepository().getName(),
+                                session.getIssue().getRepository().getOwner()
                         ),
                         session.isPaused(),
-                        session.getNotes()
+                        session.getNotes(),
+                        session.getTimeBlocks().stream()
+                                .mapToLong(tb -> {
+                                    if (tb.getStartDate() == null) return 0L;
+                                    if (tb.getEndDate() == null) return 0L;
+                                    return java.time.Duration.between(tb.getStartDate(), tb.getEndDate()).getSeconds();
+                                })
+                                .sum()
                 ))
                 .toList();
     return ResponseEntity.ok(sessionDTOs);
@@ -87,9 +101,10 @@ public class SessionController {
 
     @PostMapping("/sync")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void syncSession(@RequestBody SyncSessionRequest syncReq, @AuthenticationPrincipal OAuth2User oAuth2User){
+    public void syncSession(@RequestBody SyncSessionRequest syncReq, @RequestParam String zoneId, @AuthenticationPrincipal OAuth2User oAuth2User){
         User user = userProvider.oauthToUser(oAuth2User);
-        sessionService.syncSession(syncReq.sessionId(), syncReq.notes(), user);
+        ZoneId userZoneId = ZoneId.of(zoneId);
+        sessionService.syncSession(syncReq.sessionId(), syncReq.notes(), user, userZoneId);
     }
 
     @PostMapping("/pause")
@@ -110,6 +125,7 @@ public class SessionController {
     @DeleteMapping("/{id}/delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteSession(@PathVariable Long id, @AuthenticationPrincipal OAuth2User oAuth2User){
+        //TODO: sync delete with github
         User user = userProvider.oauthToUser(oAuth2User);
         sessionService.deleteSession(user, id);
     }
@@ -117,10 +133,19 @@ public class SessionController {
     @PutMapping("/{id}/update")
     public ResponseEntity<SessionDTO> editSession(@AuthenticationPrincipal OAuth2User oAuth2User, @PathVariable Long id, @RequestBody UpdateSessionRequest updateSessionRequest){
         User user = userProvider.oauthToUser(oAuth2User);
+        // ZoneId userZoneId = ZoneId.of(zoneId);
         Session updatedSession = sessionService.editSession(user, id, updateSessionRequest);
         if (updatedSession != null) {
             return ResponseEntity.ok(SessionDTO.fromEntity(updatedSession));
         }
         return ResponseEntity.notFound().build();
     }
+
+    @GetMapping("/issue/{id}")
+    public ResponseEntity<List<SessionDTO>> getSessionsForIssue(@AuthenticationPrincipal OAuth2User oAuth2User, @PathVariable Long id){
+        User user = userProvider.oauthToUser(oAuth2User);
+        Issue issue = issueService.getByGitHubID(id);
+        return ResponseEntity.ok(sessionService.getSessionDTOsForIssue(issue, user));
+    }
+
 }
