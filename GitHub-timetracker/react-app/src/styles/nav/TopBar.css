@@ -12,34 +12,85 @@
     padding: 20px;
     align-items: center;
 }
-
-.topbar-container .topbar-left-nav, .topbar-right-nav{
+.topbar-left-nav, .topbar-right-nav {
     display: flex;
-    gap: 30px;
+    gap: 8px; 
 }
 
-.topbar-left-nav button,.topbar-right-nav button{
-    font-size: 13pt;
-    padding: 10px 5px;
-    border: none;
-    background-color: transparent;
-    color: rgb(247, 247, 247);
-    border-bottom: 1px solid; 
-}
-
-.topbar-left-nav button:hover,.topbar-right-nav button:hover{
-    transform: scale(1.1);
-    transition: 0.2s;
+.topbar-left-nav button, .topbar-right-nav button {
+   
+    all: unset; 
+    font-size: 0.9rem; 
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px; 
+    color: #8b949e; 
     cursor: pointer;
-    color: rgb(152, 219, 231);
+    
+   
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    
+   
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+}
+
+
+.topbar-left-nav button:hover, .topbar-right-nav button:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #f0f6fc;
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
 .topbar-left-nav button.active, .topbar-right-nav button.active {
+    background-color: rgba(106, 163, 173, 0.1); 
     color: rgb(152, 219, 231);
-    border-bottom-color: rgb(152, 219, 231);
+    border: 1px solid rgba(106, 163, 173, 0.3);
+    font-weight: 600;
+ 
+    box-shadow: inset 0 0 10px rgba(106, 163, 173, 0.05);
+}
+
+.topbar-left-nav button svg {
+    font-size: 1rem;
+    opacity: 0.7;
 }
 
 .topbar-container .topbar-logo{
     color: rgb(248, 248, 248);
     font-size: 25pt;
+}
+
+.autocomplete-field {
+    position: relative; 
+    margin-bottom: 20px;
+}
+
+.suggestions-list {
+    position: absolute;
+    top: 75%;
+    left: 0;
+    right: 0;
+    background: #2d2d2d;
+    border: 1px solid #444;
+    border-radius: 4px;
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    list-style: none;
+    padding: 0;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+}
+
+.suggestions-list li {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #333;
+}
+
+.suggestions-list li:hover {
+    background: #3b82f6; 
+    color: white;
 }

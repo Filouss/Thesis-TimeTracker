@@ -1,20 +1,31 @@
 import { useLocation, useNavigate } from "react-router-dom"
 import "../../styles/nav/TopBar.css"
+import { useState } from "react";
+import { ExportModal } from "../modals/ExportModal";
+import { http } from "../../lib/http";
 
 export default function TopBar(){
     const navigate = useNavigate();
     const location = useLocation();
+    const [showExport, setShowExport] = useState(false);
+    
 
     function isActive(path: string) {
         return location.pathname.startsWith(path);
     }
 
-    function handleLogout(): void {
-        throw new Error("Function not implemented.");
+    async function handleLogout() {
+        await http.get("/logout")
+        navigate("/landing")
     }
 
     return (
         <div className="topbar-wrapper">
+            {showExport && (
+                <ExportModal
+                    onCancel={() => setShowExport(false)}
+                />
+            )}
             <div className="topbar-container">
                 <div className="topbar-left-nav">
                     <div className="homepage-btn-wrapper">
@@ -28,7 +39,7 @@ export default function TopBar(){
                         </button>
                     </div>
                     <div className="export-btn-wrapper">
-                        <button className="export-btn" onClick={() => {}}>
+                        <button className="export-btn" onClick={() => {setShowExport(true)}}>
                             Export
                         </button>
                     </div>                    

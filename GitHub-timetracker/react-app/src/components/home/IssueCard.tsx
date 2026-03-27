@@ -49,16 +49,18 @@ export function IssueCard({
         trackingButton = (
             <button
             className="tile-btn"
+            id="tracking"
             onClick={(e) =>{ 
               e.stopPropagation();
               onStartTracking(issue.number, issue.repository_url)}}
             >
-            Start tracking <FaPlay />
+            Track <FaPlay />
             </button>
         );
     } else if (isPaused) {
         trackingButton = (
             <button
+            id="tracking"
             className="tile-btn"
             onClick={(e) => {
               e.stopPropagation();
@@ -66,12 +68,13 @@ export function IssueCard({
             }}
             style={{ backgroundColor: '#28a745', color: 'white', border: 'none' }}
             >
-            Resume tracking <FaRegPlayCircle />
+            Resume <FaRegPlayCircle />
             </button>
         );
     } else {
         trackingButton = (
             <button
+            id="tracking"
             className="tile-btn"
             onClick={(e) => {
               e.stopPropagation();
@@ -79,7 +82,7 @@ export function IssueCard({
             }}
             style={{ backgroundColor: '#da7134ff', color: 'white', border: 'none' }}
             >
-            Pause tracking <FaPause />
+            Pause <FaPause />
             </button>
         );
     }
@@ -90,10 +93,10 @@ export function IssueCard({
         <>
           <div className="header-left">
             <div className="issue-info">
-              <span className="repo-name">{issue.repository_url?.split("/").pop() ?? "unknown-repo"}</span> /{" "}
-              <span className="issue-title">{issue.title}</span>
+              <span className="repo-name">{issue.repository_url?.split("/").pop() ?? "unknown-repo"}</span>
+              <span className="issue-number"> #{issue.number}</span>
+              <div className={`status-badge-${issue.state}`}>{issue.state}</div>
             </div>
-            <div className={`status-badge-${issue.state}`}>{issue.state}</div>
           </div>
 
           <div className="pin-action" onClick={(e) =>{
@@ -105,7 +108,19 @@ export function IssueCard({
       }
       meta={
         <>
-          <div className="labels-row">
+        <div className="issue-title">{issue.title}</div>
+        <div className="mid-row-right">
+          <div className="tracked-time">
+            {`Tracked time: ` + formatTrackedTime(issue.timeTracked ?? 0)}          
+          </div>
+          </div>
+        
+        </>
+      }
+      footer={
+        
+        <>
+        <div className="labels-row">
             {(() => {
               const maxChars = 30; 
               let currentChars = 0;
@@ -141,21 +156,16 @@ export function IssueCard({
               );
             })()}
           </div>
-
-          <div className="tracked-time">
-            {`Tracked time: ` + formatTrackedTime(issue.timeTracked ?? 0)}          
-          </div>
-        </>
-      }
-      footer={
-        <>
-          {trackingButton}
+          <div className="card-btns">
+            {trackingButton}
           <button className="tile-btn" onClick={(e) => {
             e.stopPropagation();
             onOpenGithub(issue.html_url);
           }}>
-            Open in GitHub
+            GitHub
           </button>
+          </div>
+          
         </>
       }
       onClick={onClick}

@@ -1,9 +1,8 @@
 html, body {
     margin: 0;
     padding: 0;
-    /* Optional: prevents horizontal scroll if things get tight */
     overflow-x: hidden; 
-    font-family: "Quicksand", sans-serif;
+    font-family: "Red Hat Display", sans-serif;
 }
 
 
@@ -14,6 +13,7 @@ html, body {
     height: 100vh;
     background: #f3f4f6;
     padding: 20px;
+    padding-top: 0px;
     flex-direction: column;
     gap: 20px;
     background-color: #121212;
@@ -25,17 +25,14 @@ html, body {
     width: 10px;
 }
 
-/* Track */
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* Handle */
 ::-webkit-scrollbar-thumb {
   background: #888;
 }
 
-/* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }

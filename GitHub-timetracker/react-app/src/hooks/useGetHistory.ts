@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { http } from "../lib/http";
 
 type ApiSession = {
@@ -16,8 +16,7 @@ export function useGetHistory(issueId?: number) {
     const [sessions, setSessions] = useState<ApiSession[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-    const fetchHistory = async () => {
+    const fetchHistory = useCallback(async () => {
       setLoading(true);
       try {
         const endpoint = issueId ? `/session/issue/${issueId}` : "/session";
@@ -28,10 +27,11 @@ export function useGetHistory(issueId?: number) {
       } finally {
         setLoading(false);
       }
-    };
+    }, [issueId]);
 
+    useEffect(() => {
     fetchHistory();
-  }, [issueId]);
+  }, [fetchHistory]);
 
-  return { sessions, loading };
+  return { sessions, loading, refetch: fetchHistory };
 }

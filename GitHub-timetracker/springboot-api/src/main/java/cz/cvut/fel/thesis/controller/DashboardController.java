@@ -83,7 +83,14 @@ public class DashboardController {
                 assigned.add(issue);
             }
             if (userService.getPinnedIssueGitHubIds(user).contains(issue.id())) {
-                pinned.add(issue);
+                if (issueEntity != null) {
+                    Long timeInSeconds = issueService.getTimeTrackedForIssueInSec(issueEntity, user);
+                    boolean allSynced = sessionService.allSyncedForIssue(issueEntity, user);
+                    GitHubIssueDTO issueWithTime = GitHubIssueDTO.withTimeTrackedAndSync(issue, timeInSeconds, allSynced);
+                    pinned.add(issueWithTime);
+                } else{
+                    pinned.add(issue);
+                }
             }
         }
 

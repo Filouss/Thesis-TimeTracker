@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -450,14 +451,8 @@ public class SessionService {
         long totalSeconds = 0;
         for (Session session : sessionDAO.findByUser(user)) {
             if (session.getTimeBlocks() != null && session.isFinished()) {
-                for (TimeBlock tb : session.getTimeBlocks()) {
-                    if (tb.getStartDate() != null) {
-                        // Check if the timeblock started within our calculated interval
-                        if (!tb.getStartDate().isBefore(intervalStart) && tb.getStartDate().isBefore(intervalEnd)) {
-                            Instant tbEnd = tb.getEndDate() != null ? tb.getEndDate() : Instant.now();
-                            totalSeconds += Duration.between(tb.getStartDate(), tbEnd).getSeconds();
-                        }
-                    }
+                if (!session.getCreatedAt().isBefore(intervalStart) && session.getCreatedAt().isBefore(intervalEnd)) {
+                    totalSeconds += session.getDuration().getSeconds();
                 }
             }
         }
@@ -614,6 +609,23 @@ public class SessionService {
             ));
         }
         return toReturn;
+    }
+
+    public List<ExportItem> getExportData(User user, String issueTitle, String repoName, String interval, ZoneId userZoneId) {
+        Instant start = getIntervalStart(interval, userZoneId);
+        Instant end = getIntervalend(interval, userZoneId);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(userZoneId);
+
+        List<Session> sessions = sessionDAO.findSessionsForExport(user, repoName, issueTitle, start, end);
+
+        return sessions.stream()
+                .map(s -> new ExportItem(
+                        s.getIssue().getTitle(),
+                        s.getIssue().getRepository().getName(),
+                        s.getDuration().getSeconds(),
+                        formatter.format(s.getCreatedAt())
+                ))
+                .toList();
     }
 
 

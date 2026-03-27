@@ -16,7 +16,6 @@ export default function App() {
             <main className="app-content-wrapper">
                     {!location.pathname.endsWith("landing") ? <TopBar /> : ""}
                     <Routes>
-                        {/* Public routes */}
                         <Route path="/" element={<RootRedirect/>} />
                         <Route path="/landing" element={<LandingPage/>} />
                         <Route path="/home" element={<HomePage/>} />

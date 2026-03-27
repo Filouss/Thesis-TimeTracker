@@ -2,9 +2,9 @@ import { BaseCard } from "./BaseCard";
 import { formatTrackedTime } from "../../lib/utils";
 
 type Session = {
-  id:number;
-  issue: {id: number, title: string, labels: {id:number, name: string, color: string}[], repoName: string};
-  timeblocks: {start: string, end: string}[];
+  id: number;
+  issue: { id: number, title: string, labels: { id: number, name: string, color: string }[], repoName: string };
+  timeblocks: { start: string, end: string }[];
   paused: boolean;
   notes: string;
   trackedSeconds: number;
@@ -30,15 +30,23 @@ export function SessionCard({
         <>
           <div className="header-left">
             <div className="issue-info">
-              <span className="repo-name">{issue.repoName}</span> /{" "}
-              <span className="issue-title">{issue.title}</span>
+              <span className="repo-name">{issue.repoName}</span>
             </div>
           </div>
         </>
       }
       meta={
         <>
-          <div className="labels-row">
+          
+          <div className="issue-title">{issue.title}</div>
+          <div className="tracked-time">
+            {`Tracked time: ` + formatTrackedTime(session.trackedSeconds)}
+          </div>
+        </>
+      }
+      footer={
+        <>
+        <div className="labels-row">
             {(() => {
               const maxChars = 30;
               let currentChars = 0;
@@ -74,21 +82,16 @@ export function SessionCard({
               );
             })()}
           </div>
-
-          <div className="tracked-time">
-            {`Tracked time: ` + formatTrackedTime(session.trackedSeconds)}
-          </div>
-        </>
-      }
-      footer={
-        <>
+          <div className="card-btns">
             <button className="tile-btn" onClick={() => onEdit?.(session.id)}>
-              Edit
-            </button>
+            Edit
+          </button>
 
-            <button className="tile-btn" onClick={() => onSync?.(session.id, session.notes, session.synced)}>
-              Sync to GitHub
-            </button>
+          <button className="tile-btn" onClick={() => onSync?.(session.id, session.notes, session.synced)}>
+            Sync to GitHub
+          </button>
+          </div>
+          
         </>
       }
     />

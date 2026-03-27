@@ -1,0 +1,126 @@
+.overview-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    width: 95%;
+    color: #f7f7f7;
+    background-color: #121212; /* Match your app background */
+}
+
+/* Top Section: Graph (Left) and Stats (Right) */
+.overview-top {
+    display: grid;
+    grid-template-columns: 3fr 1fr; /* 66% left, 33% right */
+    gap: 20px;
+    height: 50%;
+}
+
+/* Bottom Section: Label Chart (Left) and Ranked List (Right) */
+.overview-bottom {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr; /* Adjusted for better ranking list space */
+    gap: 20px;
+    min-height: 350px;
+}
+
+/* Common Widget Styling (The Boxes in the Wireframe) */
+.daily-time-graph-wrapper,
+.time-data-wrapper,
+.by-label-graph-wrapper,
+.ranked-wrapper {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.daily-time-graph-wrapper h3,
+.by-label-graph-wrapper h3, .ranked-title {
+    margin-top: 0;
+    font-size: 1.1rem;
+    color: #8b949e;
+}
+
+/* Right Side Stats Column (Time period, Total, Ratio) */
+.time-data-wrapper {
+    gap: 15px;
+}
+
+.time-data-wrapper .data-select-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.data-select-wrapper select {
+    background: #2d2d2d;
+    color: white;
+    border: 1px solid #444;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.total-wrapper, .work-ratio-wrapper {
+    background: #252525;
+    border: 1px solid #333;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.data-title {
+    font-size: 0.85rem;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.total-wrapper > div:last-child {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* Bottom Right: Ranked List + Pie Chart */
+.ranked-wrapper {
+    display: flex;
+    flex-direction: column; 
+
+}
+
+.ranked-list {
+    flex: 1;
+    font-size: 0.95rem;
+    line-height: 2;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.ranked-piechart {
+    flex: 1;
+    min-width: 150px;
+}
+
+.widget {
+    flex-grow: 1;
+    width: 100%;
+}
+
+.ranked-content{
+    display: flex;
+    justify-content: space-around;
+    flex: 2;
+    align-items: center;
+}
+
+.issue-num-span{
+    color: rgb(106, 163, 173);
+}

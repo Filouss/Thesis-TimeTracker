@@ -49,6 +49,7 @@ export default function IssueDetail({
           trackingButton = (
               <button
               className="tile-btn"
+              id="tracking"
               onClick={() => onStartTracking(issue.number, issue.repository_url)}
               >
               Start tracking <FaPlay />
@@ -57,6 +58,7 @@ export default function IssueDetail({
       } else if (isPaused) {
           trackingButton = (
               <button
+              id="tracking"
               className="tile-btn"
               onClick={() => onResumeTracking()}
               style={{ backgroundColor: '#28a745', color: 'white', border: 'none' }}
@@ -67,6 +69,7 @@ export default function IssueDetail({
       } else {
           trackingButton = (
               <button
+              id="tracking"
               className="tile-btn"
               onClick={() => onPauseTracking()}
               style={{ backgroundColor: '#da7134ff', color: 'white', border: 'none' }}
@@ -86,10 +89,10 @@ export default function IssueDetail({
         <div className="issue-card">
           <div className="card-header">
             <div className="title-section">
-              <h1>{issue.title} #{issue.number}</h1>
+              <h1>{issue.title} <span className="issue-number"> #{issue.number}</span></h1>
               <p className="repo-text">{repoName}</p>
             </div>
-            <div className={`status-tag ${issue.state}`}>
+            <div className={`status-badge-${issue.state}`}>
               {issue.state}
             </div>
           </div>

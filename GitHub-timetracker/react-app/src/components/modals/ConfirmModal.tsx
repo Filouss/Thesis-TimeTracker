@@ -13,11 +13,11 @@ export function ConfirmModal({title ,body, onConfirm, onCancel, noteFieldDisplay
 
   return (
     <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
+      <div className="modal confirm" onClick={e => e.stopPropagation()}>
 
         <p>{title}</p>
 
-        <span>{body}</span>
+        <span className="confirm-body">{body}</span>
 
         {noteFieldDisplayed && (
           <textarea 

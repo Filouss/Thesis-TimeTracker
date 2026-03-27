@@ -1,0 +1,144 @@
+/* This class ensures the landing page fills your existing wrapper correctly */
+.landing-container {
+    width: 100%;
+    max-width: 1000px;
+    margin: 40px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.hero {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem); /* Responsive font size */
+    margin-bottom: 10px;
+}
+
+.hero h1 span {
+    color: #58a6ff;
+}
+
+.hero p {
+    color: #8b949e;
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+}
+
+/* Button Styling */
+.loginBtn {
+    background-color: #238636;
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    margin: 0 auto;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.loginBtn:hover {
+    background-color: #2ea043;
+}
+
+.loginBtn img {
+    filter: brightness(0) invert(1);
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    width: 100%;
+    margin-top: 40px;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.03); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    
+    padding: 30px;
+    border-radius: 20px;
+    text-align: left;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(88, 166, 255, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.icon-circle {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    background: rgba(88, 166, 255, 0.1);
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+
+.privacy-note {
+    margin-top: 25px !important;
+    font-size: 0.85rem !important;
+    color: #6e7681 !important;
+    line-height: 1.5;
+}
+
+.privacy-note strong {
+    color: #c9d1d9;
+}
+
+.badge {
+    background: rgba(88, 166, 255, 0.1);
+    color: #58a6ff;
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 20px;
+    border: 1px solid rgba(88, 166, 255, 0.2);
+}
+
+.glow-1 {
+    position: absolute;
+    top: -10%;
+    left: -10%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(58, 166, 255, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.glow-2 {
+    position: absolute;
+    bottom: 10%;
+    right: -5%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(106, 163, 173, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.gh-icon {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1); 
+}

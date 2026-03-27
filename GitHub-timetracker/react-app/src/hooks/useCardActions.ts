@@ -1,6 +1,6 @@
 import { http } from "../lib/http";
 
-export function useCardActions(refetch: () => void) {
+export function useCardActions(refetch?: () => void) {
 
     async function startTracking(issueNumber: number, repository_url: string) {
         // Parse owner and repo from repository_url
@@ -17,7 +17,7 @@ export function useCardActions(refetch: () => void) {
             repo: repo
         });
 
-        refetch();
+        refetch?.();
     }
     
     function openGithub(url: string) {
@@ -40,7 +40,7 @@ export function useCardActions(refetch: () => void) {
             owner: owner,
             repo: repo
         });
-        refetch();
+        refetch?.();
     }
 
     async function unPin(issueNumber: number, repository_url: string) {
@@ -57,7 +57,7 @@ export function useCardActions(refetch: () => void) {
             owner: owner,
             repo: repo
         });
-        refetch();
+        refetch?.();
     }
 
     async function syncSession(sessionId: number, notes: string) {
@@ -66,7 +66,7 @@ export function useCardActions(refetch: () => void) {
             sessionId,
             notes,
         });
-        refetch();
+        refetch?.();
     }
 
     async function editSession(sessionId: number, timeblocks: {start: string, end: string}[], notes: string, synced: boolean, issueUrl?: string) {
@@ -92,29 +92,27 @@ export function useCardActions(refetch: () => void) {
         }
 
         await http.put(`/session/${sessionId}/update`, payload);
-        refetch();
+        refetch?.();
     }
 
     async function pauseTracking(){
         await http.post("/session/pause");
-        refetch();
+        refetch?.();
     }
 
     async function resumeTracking(){
         await http.post("/session/resume");
-        refetch();
+        refetch?.();
     }
 
     async function endTracking(notes: string){
         await http.post("/session/end", { notes });
-        refetch();
+        refetch?.();
     }
 
     async function deleteSession(sessionId: number) {
-        console.log("jsem v del fci");
         await http.delete(`/session/${sessionId}/delete`);
-        // refetch();
-        // TODO: refetch nebo ne
+        refetch?.();
     }
 
 

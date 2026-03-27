@@ -4,12 +4,13 @@ import ByLabelGraph from '../components/overview/ByLabelGraph';
 import TrackedTimeData from '../components/overview/TrackedTimeData';
 import TimeRankedIssues from '../components/overview/TimeRankedIssues';
 import { useGetOverviewData } from '../hooks/useGetOverviewData';
+import "../styles/OverviewPage.css";
 
 export default function OverViewPage() {
     const{statData, graphData, fetchGraphs, fetchStats} = useGetOverviewData();
 
     useEffect(() => {
-        fetchStats();
+        fetchStats("ThisWeek");
         fetchGraphs();
     }, []);
 
@@ -18,12 +19,12 @@ export default function OverViewPage() {
     return (
         <div className="overview-page">
             <div className="overview-top">
-                <DailyTimeGraph />
-                <TrackedTimeData />
+                <DailyTimeGraph data={graphData?.dailyData}/>
+                <TrackedTimeData statData={statData} onIntervalChange={(val) => fetchStats(val)}/>
             </div>
             <div className="overview-bottom">
-                <ByLabelGraph />
-                <TimeRankedIssues />
+                <ByLabelGraph data={graphData?.timeByLabel}/>
+                <TimeRankedIssues data={graphData?.rankedIssues}/>
             </div>
         </div>
     )

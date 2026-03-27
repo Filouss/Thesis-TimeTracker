@@ -6,12 +6,12 @@ import "../styles/HistoryPage.css";
 export default function HistoryPage() {
 
     const {id} = useParams();
-    const {sessions} = useGetHistory(id ? Number(id) : undefined);
+    const {sessions, refetch} = useGetHistory(id ? Number(id) : undefined);
 
 
     return (
         <div className="history-page">
-            <HistoryContent sessions={sessions}/>
+            <HistoryContent sessions={sessions} onRefetch={refetch}/>
         </div>
     )
 };

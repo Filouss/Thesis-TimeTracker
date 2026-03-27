@@ -1,6 +1,7 @@
 package cz.cvut.fel.thesis.service;
 
 import cz.cvut.fel.thesis.dao.IssueDAO;
+import cz.cvut.fel.thesis.dao.RepositoryDAO;
 import cz.cvut.fel.thesis.dao.SessionDAO;
 import cz.cvut.fel.thesis.dao.UserDAO;
 import cz.cvut.fel.thesis.dto.GitHubIssueDTO;
@@ -27,6 +28,9 @@ public class IssueService {
 
     @Autowired
     private UserDAO userDAO;
+
+    @Autowired
+    private RepositoryDAO repositoryDAO;
 
     @Autowired
     private SessionDAO sessionDAO;
@@ -132,6 +136,15 @@ public class IssueService {
 
     public Issue getByGitHubID(Long githubId) {
         return issueDAO.findByGithubId(githubId).orElse(null);
+    }
+
+    public List<String> getRepoNamesForQuery(String query, User user) {
+        return repositoryDAO.findRepoSuggestionsForUser(user,query);
+    }
+
+    public List<String> getIssueNamesForQuery(String query, User user) {
+        return issueDAO.findIssueSuggestionsForUser(user, query);
+        
     }
 
 }

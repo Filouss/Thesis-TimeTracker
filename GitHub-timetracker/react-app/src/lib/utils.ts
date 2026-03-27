@@ -5,3 +5,4 @@ export function formatTrackedTime(totalSeconds: number): string {
   if (hours === 0) return `${minutes}m`;
   return `${hours}h ${minutes}m`;
 }
+
