@@ -58,9 +58,11 @@ public class SessionController {
 
 
     @GetMapping
-    public ResponseEntity<List<SessionDTO>> getSessions(@AuthenticationPrincipal OAuth2User oAuth2User){
+    public ResponseEntity<List<SessionDTO>> getSessions(@AuthenticationPrincipal OAuth2User oAuth2User, @RequestParam(defaultValue = "createdAt") String sortBy,
+    @RequestParam(defaultValue = "desc") String direction){
         User user = userProvider.oauthToUser(oAuth2User);
-        List<Session> sessions = sessionService.getSessions(user);
+        System.out.println("prisel req s temahle params " + sortBy + direction);
+        List<Session> sessions = sessionService.getSessions(user, sortBy, direction);
         List<SessionDTO> sessionDTOs = sessions.stream()
                 .map(session -> new SessionDTO(
                         session.getId(),
@@ -142,10 +144,11 @@ public class SessionController {
     }
 
     @GetMapping("/issue/{id}")
-    public ResponseEntity<List<SessionDTO>> getSessionsForIssue(@AuthenticationPrincipal OAuth2User oAuth2User, @PathVariable Long id){
+    public ResponseEntity<List<SessionDTO>> getSessionsForIssue(@AuthenticationPrincipal OAuth2User oAuth2User, @PathVariable Long id, @RequestParam(defaultValue = "createdAt") String sortBy,
+    @RequestParam(defaultValue = "desc") String direction){
         User user = userProvider.oauthToUser(oAuth2User);
         Issue issue = issueService.getByGitHubID(id);
-        return ResponseEntity.ok(sessionService.getSessionDTOsForIssue(issue, user));
+        return ResponseEntity.ok(sessionService.getSessionDTOsForIssue(issue, user,  sortBy, direction));
     }
 
 }

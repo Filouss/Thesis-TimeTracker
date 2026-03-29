@@ -3,7 +3,7 @@ import { formatTrackedTime } from "../../lib/utils";
 
 type Session = {
   id: number;
-  issue: { id: number, title: string, labels: { id: number, name: string, color: string }[], repoName: string };
+  issue: { id: number, title: string, labels: { id: number, name: string, color: string }[], repoName: string, number: number };
   timeblocks: { start: string, end: string }[];
   paused: boolean;
   notes: string;
@@ -31,6 +31,7 @@ export function SessionCard({
           <div className="header-left">
             <div className="issue-info">
               <span className="repo-name">{issue.repoName}</span>
+              <span className="issue-number"> #{issue.number}</span>
             </div>
           </div>
         </>

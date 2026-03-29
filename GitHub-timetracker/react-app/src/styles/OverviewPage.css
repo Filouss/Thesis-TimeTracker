@@ -95,13 +95,14 @@
 }
 
 .ranked-list {
-    flex: 1;
+    flex: 0 0 50%;
     font-size: 0.95rem;
     line-height: 2;
     justify-content: center;
     display: flex;
     flex-direction: column;
     padding: 20px;
+    width: 50%;
 }
 
 .ranked-piechart {
@@ -122,5 +123,45 @@
 }
 
 .issue-num-span{
+    color: rgb(106, 163, 173);
+}
+
+.ranked-item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+    min-width: 0;
+}
+
+.ranked-bullet {
+    width: 8px;
+    min-width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.ranked-index {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.ranked-title-group {
+    display: flex;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+}
+
+.ranked-title-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.issue-num-span {
+    flex-shrink: 0;
     color: rgb(106, 163, 173);
 }

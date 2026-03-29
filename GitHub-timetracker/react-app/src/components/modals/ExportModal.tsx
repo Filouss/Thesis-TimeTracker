@@ -105,7 +105,7 @@ export function ExportModal({onCancel} : EditSessionModalProps) {
           <label htmlFor="pdf">PDF</label>
         </div>
         {error && (
-          <div className="modal-error">{error}</div>
+          <div className="modal-error" color="red">{error}</div>
         )}
         <div className="modal-actions">
           <button onClick={onCancel} className="modal-cancel">Cancel</button>

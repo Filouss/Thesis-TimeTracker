@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +30,9 @@ public class Session {
     @JoinColumn(name = "issue_id")
     private Issue issue;
 
+    @Column
+    private Instant createdAt;
+
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TimeBlock> timeBlocks = new ArrayList<>();
 
@@ -38,8 +40,12 @@ public class Session {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column
+    private Long timeTracked;
+
     @Transient
     public Duration getDuration(){
+        if(timeTracked != null) return Duration.ofSeconds(timeTracked);
         if (timeBlocks == null || timeBlocks.isEmpty()) return Duration.ZERO;
 
         return timeBlocks.stream()
@@ -63,16 +69,18 @@ public class Session {
         return mostRecent;
     }
 
-    public Instant getCreatedAt(){
+    public Instant getCreatedAt() {
+        if (createdAt != null) return createdAt;
         if (timeBlocks == null || timeBlocks.isEmpty()) return null;
-        TimeBlock oldest = null;
-        for (TimeBlock tb : timeBlocks) {
-            if (oldest == null ||
-                    tb.getStartDate().isBefore(oldest.getStartDate())) {
-                oldest = tb;
-            }
-        }
-        return oldest.getStartDate();
+        return timeBlocks.stream()
+                .filter(tb -> tb.getStartDate() != null)
+                .map(TimeBlock::getStartDate)
+                .min(java.util.Comparator.naturalOrder())
+                .orElse(null);
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 
     public void addTimeBlock(TimeBlock tb) {
@@ -147,5 +155,13 @@ public class Session {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Long getTimeTracked() {
+        return timeTracked;
+    }
+
+    public void setTimeTracked(Long timeTracked) {
+        this.timeTracked = timeTracked;
     }
 }

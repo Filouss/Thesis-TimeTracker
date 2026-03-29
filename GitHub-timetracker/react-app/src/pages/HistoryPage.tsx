@@ -11,7 +11,7 @@ export default function HistoryPage() {
 
     return (
         <div className="history-page">
-            <HistoryContent sessions={sessions} onRefetch={refetch}/>
+            <HistoryContent sessions={sessions} onRefetch={refetch} />
         </div>
     )
 };

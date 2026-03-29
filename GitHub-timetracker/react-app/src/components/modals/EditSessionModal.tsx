@@ -31,8 +31,6 @@ export function EditSessionModal({ session, onSave, onCancel, error }: EditSessi
 
   useEffect(() => {
     if (session) {
-      console.log("tuhle session editim");
-      console.log(session);
       const formattedTB = session.timeblocks.map(tb => ({
         start: formatDateTime(tb.start),
         end: tb.end ? formatDateTime(tb.end) : ""       
@@ -108,6 +106,18 @@ export function EditSessionModal({ session, onSave, onCancel, error }: EditSessi
     setTimeblocks(timeblocks.filter((_, i) => i !== index));
   };
 
+  const isValidUrl = (url: string) => {
+    const urlPattern = /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/issues\/(\d+)/;
+    return urlPattern.test(url);
+  };
+
+  const hasTimeblockError = timeblocks.some(block => {
+    if (!block.start || !block.end) return true;
+    return new Date(block.start) > new Date(block.end);
+  });
+
+  const isSaveDisabled = !isValidUrl(issueUrl) || hasTimeblockError;
+
   const handleSave = () => {
     // Convert local datetime-local strings back to absolute UTC strings for the backend
     const formattedTimeblocks = timeblocks.map((tb) => ({
@@ -144,26 +154,34 @@ export function EditSessionModal({ session, onSave, onCancel, error }: EditSessi
 
         <div className="timeblocks-section">
           <h4>Time Blocks</h4>
-          {timeblocks.map((block, index) => (
-            <div key={index} className="timeblock-row">
-              <input
-                type="datetime-local"
-                value={block.start}
-                onChange={(e) => updateTimeblock(index, 'start', e.target.value)}
-              />
-              <span>to</span>
-              <input
-                type="datetime-local"
-                value={block.end || ""}
-                onChange={(e) => updateTimeblock(index, 'end', e.target.value)}
-              />
-              <div className="button-spacer">
-                {index > 0 && (
-                  <button onClick={() => removeTimeblock(index)}>Remove</button>
-                )}
+          {timeblocks.map((block, index) => {
+            const isInvalid = block.start && block.end && new Date(block.start) > new Date(block.end);
+            return (
+              <div key={index} className="timeblock-row">
+                <div className="timeblock-inputs">
+                  <input
+                    type="datetime-local"
+                    value={block.start}
+                    className={isInvalid ? 'invalid-input' : ''}
+                    onChange={(e) => updateTimeblock(index, 'start', e.target.value)}
+                  />
+                  <span>to</span>
+                  <input
+                    type="datetime-local"
+                    value={block.end || ""}
+                    className={isInvalid ? 'invalid-input' : ''}
+                    onChange={(e) => updateTimeblock(index, 'end', e.target.value)}
+                  />
+                </div>
+                <div className="button-spacer">
+                  {index > 0 && (
+                    <button onClick={() => removeTimeblock(index)}>Remove</button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
+          {hasTimeblockError && <div className="error-message">End time must be after Start time for all blocks.</div>}
           <button onClick={addTimeblock} className="tb-add">Add Time Block</button>
         </div>
 
@@ -178,7 +196,13 @@ export function EditSessionModal({ session, onSave, onCancel, error }: EditSessi
 
         <div className="modal-actions">
           <button onClick={onCancel} className="modal-cancel">Cancel</button>
-          <button onClick={handleSave} className="modal-confirm">Save Changes</button>
+          <button 
+            onClick={handleSave} 
+            className={`modal-confirm ${isSaveDisabled ? 'disabled' : ''}`}
+            disabled={isSaveDisabled}
+          >
+            Save Changes
+          </button>
         </div>
       </div>
     </div>

@@ -32,8 +32,6 @@ export function useCardActions(refetch?: () => void) {
             throw new Error("Invalid repository_url: " + repository_url);
         }
         const [owner, repo] = parts[1].split("/");
-        console.log("owner ", owner);
-        console.log("repo ", repo);
 
         await http.post("/issues/pin", {
             issueNumber: issueNumber,

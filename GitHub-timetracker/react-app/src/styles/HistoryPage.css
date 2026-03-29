@@ -58,6 +58,7 @@ history-list::-webkit-scrollbar {
 .history-table-header {
   display: grid;
   grid-template-columns: 2.5fr 2fr 1.3fr 1fr 0.6fr 1.3fr;
+  align-items: center;
   padding: 10px 25px;
   color: #bdbdbd;
   font-size: 0.85rem;
@@ -105,7 +106,7 @@ history-list::-webkit-scrollbar {
   align-items: center;
   background-color: rgb(43, 42, 42);
   border: none;
-  padding: 15px 25px;
+  padding: 10px 25px;
   margin-bottom: 12px;
   border-radius: 6px;
 
@@ -237,4 +238,41 @@ history-list::-webkit-scrollbar {
 
 .page-num:hover:not(.active) {
   border-bottom-color: #d1d1d1;
+}
+
+
+.history-table-header > div:not(.col-actions) {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    padding: 8px 0px;
+    border-bottom: 2px solid transparent; 
+    user-select: none;
+}
+
+.history-table-header > div:hover {
+    color: #f0f6fc;
+}
+
+.active-sort {
+    color: rgb(152, 219, 231) !important; 
+    
+}
+
+.history-table-header svg {
+    font-size: 1rem;
+    color: rgb(106, 163, 173);
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(2px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.col-actions {
+    flex-shrink: 0;
+    width: 100px;
 }

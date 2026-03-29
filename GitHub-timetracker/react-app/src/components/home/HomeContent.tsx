@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {  useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCardActions } from "../../hooks/useCardActions";
 // import { useGetIssues } from "../../hooks/useGetIssues";
@@ -21,6 +21,10 @@ type Session = {
 export default function HomeContent() {
     const navigate = useNavigate();
     const {data, loading, refetch} = useIssues();
+
+    useEffect(() => {
+        refetch();
+    }, [refetch]);
     const {startTracking, syncSession, openGithub, Pin, unPin, editSession, pauseTracking, resumeTracking, endTracking} = useCardActions(refetch);
     const [showConfirm, setShowConfirm] = useState(false);
     const [editingSession, setEditingSession] = useState<Session | null>(null);
@@ -47,6 +51,20 @@ export default function HomeContent() {
         }
     };
 
+    function handleStartTracking(issueNumber: number, repository_url: string){
+        if(data?.tracking) {
+            setConfirmTitle("Are you sure you want start a new session?");
+            setConfirmMessageBody("Your currently active session will be ended and moved to Ready to Sync");
+            setShowNotes(false);
+            setConfirmAction(() => () => {
+                startTracking(issueNumber, repository_url);
+            });
+            setShowConfirm(true)
+        } else {
+            startTracking(issueNumber, repository_url);
+        }
+    }
+
     async function syncAll(){
         if(data)
         await Promise.all(data.toSync.map(s => syncSession(s.id, s.notes)));
@@ -57,6 +75,7 @@ export default function HomeContent() {
 
     const isCurrentIssuePinned = data.tracking && data.pinned.some(pinnedIssue => pinnedIssue.id === data.tracking?.id);
     
+    console.log("home data")
     console.log(data);
 
     return (
@@ -96,12 +115,11 @@ export default function HomeContent() {
                             <div className="homeCard-list" id="assigned">
                                 {data.assigned && data.assigned.length > 0 ? (data.assigned.map((issue) => 
                                 {
-                                    console.log(issue);
                                     return(
                                     <IssueCard
                                         key={issue.id}
                                         issue={issue}
-                                        onStartTracking={startTracking}
+                                        onStartTracking={handleStartTracking}
                                         onOpenGithub={openGithub}
                                         PinBtnAction={Pin}
                                         onPauseTracking={pauseTracking}
@@ -124,7 +142,7 @@ export default function HomeContent() {
                                     <IssueCard
                                         key={issue.id}
                                         issue={issue}
-                                        onStartTracking={startTracking}
+                                        onStartTracking={handleStartTracking}
                                         onOpenGithub={openGithub}
                                         PinBtnAction={unPin}
                                         onPauseTracking={pauseTracking}
@@ -145,7 +163,7 @@ export default function HomeContent() {
                                     <IssueCard
                                         key={data.tracking.id}
                                         issue={data.tracking}
-                                        onStartTracking={startTracking}
+                                        onStartTracking={() => {}}
                                         onOpenGithub={openGithub}
                                         PinBtnAction={isCurrentIssuePinned ? unPin : Pin}
                                         onPauseTracking={pauseTracking}
@@ -166,7 +184,14 @@ export default function HomeContent() {
                                     </div>
                                 </div>
                                 <div className="homeCard-list">
-                                    {data.toSync.map((session) => (
+                                    {data.toSync ? (
+                                        [...data.toSync]
+                                        .sort((a, b) => {
+                                            const timeA = new Date(a.timeblocks[0]?.start || 0).getTime();
+                                            const timeB = new Date(b.timeblocks[0]?.start || 0).getTime();
+                                            return timeB - timeA;
+                                        })
+                                        .map((session) => (
                                         <SessionCard
                                             key={session.id}
                                             session={session}
@@ -176,7 +201,10 @@ export default function HomeContent() {
                                                 if (sessionToEdit) setEditingSession(sessionToEdit);
                                             }}
                                         />
-                                    ))}
+                                    ))
+                                    ) : 
+                                        <p>Sessions that are ready to be synchronized with GitHub will be displayed here.</p>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -206,7 +234,7 @@ export default function HomeContent() {
                     }}
                     disabled={data.toSync.length === 0}
                     className="syncAllBtn"
-                    >Sync all to Github</button>
+                    >Sync all to GitHub</button>
                 </div>
         </div>
     )

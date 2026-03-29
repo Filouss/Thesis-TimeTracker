@@ -87,7 +87,7 @@
   display: flex;
   flex-direction: column;
   color: rgb(247, 247, 247);
-  border-bottom-color: rgb(106, 163, 173);
+  /* border-bottom-color: rgb(106, 163, 173); */
   transition: 0.2s;
   height: 110px;
   min-height: 110px;
@@ -125,7 +125,7 @@
   color: #888;
 }
 
-.issue-number {
+.homeCard-list .issue-number {
   color: rgb(106, 163, 173);
   font-size: 12pt;
 }
@@ -491,10 +491,27 @@
   cursor: pointer;
 }
 
-.modal-confirm:hover {
+.modal-confirm:active:hover {
   background-color: #1e7e34;
   transition: background 0.2s;
 }
+
+.modal-confirm:disabled{
+  background-color: #3d3c3c;
+  cursor:default;
+}
+
+.modal-confirm:disabled:hover{
+  background-color: #3d3c3c;
+  cursor:default;
+}
+
+
+.invalid-input {
+  border: 1px solid #ff4444 !important;
+  outline: none;
+}
+
 
 .tb-add {
   background-color: transparent;

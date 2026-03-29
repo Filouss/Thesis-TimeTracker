@@ -7,8 +7,8 @@ import { useCardActions } from "../hooks/useCardActions";
 export default function IssueDetailPage(
 ) {
     const {id} = useParams();
-    const {data} = useIssues();
-    const {startTracking, openGithub, pauseTracking, resumeTracking} = useCardActions(() => {});
+    const {data, refetch} = useIssues();
+    const {startTracking, openGithub, pauseTracking, resumeTracking} = useCardActions(refetch);
 
     const issue = data?.assigned.find(i => i.id === Number(id));
     console.log(issue);
@@ -27,6 +27,7 @@ export default function IssueDetailPage(
                 onResumeTracking={resumeTracking}
                 isCurrent={data?.tracking?.id === issue.id}
                 isPaused={data?.trackingPaused}
+                isTracking={data?.tracking !== null}
                 />
         </div>
     )

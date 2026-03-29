@@ -15,13 +15,7 @@ public record SessionDTO (
     Long trackedSeconds
 ) {
     public static SessionDTO fromEntity(Session session){
-        Long trackedSeconds = session.getTimeBlocks().stream()
-                .mapToLong(tb -> {
-                    if (tb.getStartDate() == null) return 0L;
-                    if (tb.getEndDate() == null) return 0L;
-                    return java.time.Duration.between(tb.getStartDate(), tb.getEndDate()).getSeconds();
-                })
-                .sum();
+        Long trackedSeconds = session.getDuration().getSeconds();
 
         return new SessionDTO(
                 session.getId(),

@@ -20,7 +20,6 @@ export function useGetOverviewData() {
 
     async function fetchGraphs() {
         setLoading(true);
-        console.log("fetchuju")
         try {
             const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const res = await http.get<GraphData>(`/dashboard/overview/graphs?zoneId=${encodeURIComponent(timeZone)}`);

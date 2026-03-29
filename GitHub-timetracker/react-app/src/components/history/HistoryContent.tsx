@@ -5,6 +5,7 @@ import { ConfirmModal } from "../modals/ConfirmModal";
 import { useCardActions } from "../../hooks/useCardActions";
 import { EditSessionModal } from "../modals/EditSessionModal";
 import { AiOutlineDelete } from "react-icons/ai";
+import { IoArrowDownOutline, IoArrowUpOutline } from "react-icons/io5";
 
 type TimeBlock = {
   start: string;
@@ -23,7 +24,7 @@ type ApiSession = {
 
 type HistoryContentProps = {
   sessions: ApiSession[];
-  onRefetch?: () => void;
+  onRefetch: (sortBy?: string, direction?: string) => void;
 }
 
 export default function HistoryContent({
@@ -41,6 +42,8 @@ export default function HistoryContent({
   const [confirmAction, setConfirmAction] = useState<((notes?: string) => void) | null>(null);
   const { editSession, deleteSession, syncSession } = useCardActions(onRefetch);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [descDirection, setDescDirection] = useState(true)
+  const [sortBy, setSortBy] = useState("createdAt")
 
   const toggleExpand = (id: number) => {
     setExpandedId(expandedId === id ? null : id);
@@ -71,6 +74,17 @@ export default function HistoryContent({
     }
   };
 
+  function handleSortClick(field: string){
+    const isSameField = sortBy === field;
+    const newDirection = isSameField ? !descDirection : true; 
+
+    setSortBy(field);
+    setDescDirection(newDirection);
+
+    onRefetch(field, newDirection ? "desc" : "asc");
+};
+
+
   return (
     <div className="history-page-wrapper">
       {showConfirm && (
@@ -99,16 +113,51 @@ export default function HistoryContent({
       )}
       <div className="history-container">
         <h2 className="page-title">Tracked sessions history</h2>
-
         {/* Table Header */}
         <div className="history-table-header">
-          <div className="col-title">Worked issue title</div>
-          <div className="col-repo">Repository</div>
-          <div className="col-time">Time tracked</div>
-          <div className="col-date">Date</div>
-          <div className="col-synced">Synced</div>
-          <div className="col-actions"></div>
+          <div 
+            className={`col-title ${sortBy === "issue.title" ? "active-sort" : ""}`} 
+            onClick={() => handleSortClick("issue.title")}
+          >
+            Worked issue title
+            {sortBy === "issue.title" && (descDirection ? <IoArrowDownOutline /> : <IoArrowUpOutline />)}
+          </div>
+
+          <div 
+            className={`col-repo ${sortBy === "issue.repository.name" ? "active-sort" : ""}`} 
+            onClick={() => handleSortClick("issue.repository.name")}
+          >
+            Repository
+            {sortBy === "issue.repository.name" && (descDirection ? <IoArrowDownOutline /> : <IoArrowUpOutline />)}
+          </div>
+
+          <div 
+            className={`col-time ${sortBy === "timeTracked" ? "active-sort" : ""}`} 
+            onClick={() => handleSortClick("timeTracked")}
+          >
+            Time tracked
+            {sortBy === "timeTracked" && (descDirection ? <IoArrowDownOutline /> : <IoArrowUpOutline />)}
+          </div>
+
+          <div 
+            className={`col-date ${sortBy === "createdAt" ? "active-sort" : ""}`} 
+            onClick={() => handleSortClick("createdAt")}
+          >
+            Date
+            {sortBy === "createdAt" && (descDirection ? <IoArrowDownOutline /> : <IoArrowUpOutline />)}
         </div>
+
+  <div 
+    className={`col-synced ${sortBy === "synced" ? "active-sort" : ""}`} 
+    onClick={() => handleSortClick("synced")}
+  >
+    Synced
+    {sortBy === "synced" && (descDirection ? <IoArrowDownOutline /> : <IoArrowUpOutline />)}
+  </div>
+  
+  <div className="col-actions"></div>
+</div>
+
 
         {/* Table Body */}
         <div className="history-list">

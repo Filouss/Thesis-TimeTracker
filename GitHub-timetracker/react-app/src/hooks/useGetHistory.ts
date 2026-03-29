@@ -16,11 +16,14 @@ export function useGetHistory(issueId?: number) {
     const [sessions, setSessions] = useState<ApiSession[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchHistory = useCallback(async () => {
+    const fetchHistory = useCallback(async (sortBy? : string, direction?: string) => {
       setLoading(true);
+      if(!sortBy){sortBy = "createdAt"}
+      if(!direction){direction = "desc"}
+      console.log("refetch s temahle params " + sortBy + " " + direction)
       try {
         const endpoint = issueId ? `/session/issue/${issueId}` : "/session";
-        const res = await http.get(endpoint);
+        const res = await http.get(endpoint, {params: {sortBy: sortBy, direction: direction}});
         setSessions(res.data);
       } catch (error) {
         console.error("Failed to fetch sessions", error);

@@ -15,6 +15,11 @@
 .topbar-left-nav, .topbar-right-nav {
     display: flex;
     gap: 8px; 
+    flex: 1; 
+}
+
+.topbar-right-nav {
+    justify-content: flex-end; 
 }
 
 .topbar-left-nav button, .topbar-right-nav button {
@@ -61,6 +66,9 @@
 .topbar-container .topbar-logo{
     color: rgb(248, 248, 248);
     font-size: 25pt;
+    flex-shrink: 0; 
+    text-align: center;
+    flex: 0 0 auto; 
 }
 
 .autocomplete-field {

@@ -4,6 +4,8 @@ import cz.cvut.fel.thesis.dao.*;
 import cz.cvut.fel.thesis.dto.*;
 import cz.cvut.fel.thesis.exceptions.UnassignedIssueException;
 import cz.cvut.fel.thesis.model.*;
+
+import org.springframework.data.domain.Sort;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -85,7 +87,7 @@ public class SessionService {
                 .findById(user.getActiveSessionID())
                 .orElseThrow(NotActiveException::new);
         session.setFinished(true);
-        if (!notes.isEmpty()) {
+        if (notes == null || !notes.isEmpty()) {
             session.setNotes(notes);
         }
         sessionDAO.save(session);
@@ -114,6 +116,14 @@ public class SessionService {
             tb.setEndDate(Instant.now());
             timeBlockDAO.save(tb);
         }
+
+        // recalculate timeTracked
+        long seconds = session.getTimeBlocks().stream()
+                .filter(block -> block.getStartDate() != null && block.getEndDate() != null)
+                .mapToLong(block -> Duration.between(block.getStartDate(), block.getEndDate()).getSeconds())
+                .sum();
+        session.setTimeTracked(seconds);
+
         sessionDAO.save(session);
     }
 
@@ -198,9 +208,22 @@ public class SessionService {
             finalBlocks.add(tb);
         }
 
-        // DELETE removed blocks
+        // UPDATE createdAt to the earliest block start for sorting
+        Instant earliestStart = finalBlocks.stream()
+                .map(TimeBlock::getStartDate)
+                .filter(Objects::nonNull)
+                .min(Comparator.naturalOrder())
+                .orElse(null);
+        existingSession.setCreatedAt(earliestStart);
         existingSession.getTimeBlocks().clear();
         existingSession.getTimeBlocks().addAll(finalBlocks);
+
+        // recalculate timeTracked
+        long seconds = finalBlocks.stream()
+                .filter(block -> block.getStartDate() != null && block.getEndDate() != null)
+                .mapToLong(block -> Duration.between(block.getStartDate(), block.getEndDate()).getSeconds())
+                .sum();
+        existingSession.setTimeTracked(seconds);
     }
 
     private void createTimeBlock(Session session) {
@@ -219,6 +242,8 @@ public class SessionService {
         session.setSynced(false);
         session.setUser(user);
         session.setFinished(false);
+        session.setCreatedAt(Instant.now());
+        session.setTimeTracked(0L);
         session = sessionDAO.save(session);
         user.setActiveSessionID(session.getId());
         userDAO.save(user);
@@ -254,8 +279,11 @@ public class SessionService {
         return labels;
     }
 
-    public List<Session> getSessions(User user) {
-        return sessionDAO.findByUser(user);
+    public List<Session> getSessions(User user, String sortBy, String direction) {
+        if (sortBy == null) sortBy = "createdAt";
+        if (direction == null) direction = "desc";
+        Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        return sessionDAO.findByUser(user, sort);
     }
 
     public void syncSession(Long sessionId, String notes, User user, ZoneId userZoneId) {
@@ -370,8 +398,11 @@ public class SessionService {
         return true;
     }
 
-    public List<SessionDTO> getSessionDTOsForIssue(Issue issue, User user) {
-        List<Session> sessions = sessionDAO.findByIssueAndUser(issue, user);
+    public List<SessionDTO> getSessionDTOsForIssue(Issue issue, User user, String sortBy, String direction) {
+        if (sortBy == null) sortBy = "createdAt";
+        if (direction == null) direction = "desc";
+        Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        List<Session> sessions = sessionDAO.findByIssueAndUser(issue, user, sort);
         List<SessionDTO> dtos = sessions.stream()
                 .map(session -> new SessionDTO(
                         session.getId(),
@@ -396,15 +427,7 @@ public class SessionService {
                                 session.getIssue().getRepository().getOwner()),
                         session.isPaused(),
                         session.getNotes(),
-                        session.getTimeBlocks().stream()
-                                .mapToLong(tb -> {
-                                    if (tb.getStartDate() == null)
-                                        return 0L;
-                                    if (tb.getEndDate() == null)
-                                        return 0L;
-                                    return java.time.Duration.between(tb.getStartDate(), tb.getEndDate()).getSeconds();
-                                })
-                                .sum()))
+                        session.getDuration().getSeconds()))
                 .toList();
 
         return dtos;
