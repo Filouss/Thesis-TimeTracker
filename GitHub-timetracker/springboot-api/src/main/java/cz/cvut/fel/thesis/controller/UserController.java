@@ -16,6 +16,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Set;
 
+/**
+ * Provides user-related endpoints for authenticated requests.
+ */
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -29,11 +32,22 @@ public class UserController {
     @Autowired
     private CurrentUserProvider userProvider;
 
+    /**
+     * Returns attributes of the current authenticated OAuth2 user.
+     *
+     * @param user authenticated OAuth2 principal
+     * @return raw user attributes map
+     */
     @GetMapping("/me")
     public Object me(@AuthenticationPrincipal OAuth2User user) {
         return user.getAttributes();
     }
 
+    /**
+     * Fetches profile information directly from GitHub API.
+     *
+     * @return GitHub user profile payload
+     */
     @GetMapping("/api/github/me")
     public Object githubMe() {
         return github.get()
@@ -43,6 +57,12 @@ public class UserController {
                 .block();
     }
 
+    /**
+     * Returns ids of issues pinned by the current user.
+     *
+     * @param oAuth2User authenticated OAuth2 principal
+     * @return set of pinned GitHub issue ids
+     */
     @GetMapping("/pinnedIds")
     public ResponseEntity<Set<Long>> fetchPinnedIssues(@AuthenticationPrincipal OAuth2User oAuth2User) {
         User user = userProvider.oauthToUser(oAuth2User);

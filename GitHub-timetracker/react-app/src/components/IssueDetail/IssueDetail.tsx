@@ -167,7 +167,6 @@ export default function IssueDetail({
             <button className="history-btn" onClick={() => navigate(`/issues/${issue.id}/history`)}
             >Issue work history</button>
             <div className={`sync-status-${issue.allSynced}`}>
-              {/* TODO: different colors */}
               {issue.allSynced ? "Synchronized ✓" : "Unsynced changes ⚠️"}
             </div>
           </div>

@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 
 import java.util.Set;
 
+/**
+ * Represents a GitHub label associated with tracked issues.
+ */
 @Entity
 public class Label {
     @Id

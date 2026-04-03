@@ -32,6 +32,9 @@ import cz.cvut.fel.thesis.service.IssueService;
 import cz.cvut.fel.thesis.service.UserService;
 import cz.cvut.fel.thesis.utils.CurrentUserProvider;
 
+/**
+ * Exposes aggregated dashboard data for home and overview screens.
+ */
 @RestController
 @RequestMapping("/dashboard")
 public class DashboardController {
@@ -51,11 +54,16 @@ public class DashboardController {
     @Autowired
     private FormatService formatService;
 
+    /**
+     * Returns home dashboard data including active, pinned, and assigned issues.
+     *
+     * @param oAuth2User authenticated OAuth2 principal
+     * @return home dashboard payload
+     */
     @GetMapping("/home")
     public ResponseEntity<HomeDashboardDTO> getHomepageData(@AuthenticationPrincipal OAuth2User oAuth2User) {
         User user = userProvider.oauthToUser(oAuth2User);
-        // ZoneId userZoneId = ZoneId.of(zoneId);
-        
+
         List<SessionDTO> sessions = sessionService.getUnsyncedDTOs(user);
         Long activeSessionId = user.getActiveSessionID();
         Boolean trackingPaused;
@@ -67,6 +75,14 @@ public class DashboardController {
         GitHubIssueDTO active = null;
         if (activeSessionId != null) {
             active = issueService.getIssueBySessionId(user.getActiveSessionID());
+            if (active != null) {
+                 Issue issueEntity = issueService.getByGitHubID(active.id());
+                 if (issueEntity != null) {
+                     Long timeInSeconds = issueService.getTimeTrackedForIssueInSec(issueEntity, user);
+                     boolean allSynced = sessionService.allSyncedForIssue(issueEntity, user);
+                     active = GitHubIssueDTO.withTimeTrackedAndSync(active, timeInSeconds, allSynced);
+                 }
+            }
         }
 
 
@@ -80,7 +96,7 @@ public class DashboardController {
                 GitHubIssueDTO issueWithTime = GitHubIssueDTO.withTimeTrackedAndSync(issue, timeInSeconds, allSynced);
                 assigned.add(issueWithTime);
             } else {
-                assigned.add(issue);
+                assigned.add(GitHubIssueDTO.withTimeTrackedAndSync(issue, 0L, true));
             }
             if (userService.getPinnedIssueGitHubIds(user).contains(issue.id())) {
                 if (issueEntity != null) {
@@ -89,7 +105,7 @@ public class DashboardController {
                     GitHubIssueDTO issueWithTime = GitHubIssueDTO.withTimeTrackedAndSync(issue, timeInSeconds, allSynced);
                     pinned.add(issueWithTime);
                 } else{
-                    pinned.add(issue);
+                    pinned.add(GitHubIssueDTO.withTimeTrackedAndSync(issue, 0L, true));
                 }
             }
         }
@@ -105,6 +121,13 @@ public class DashboardController {
         );
     }
 
+    /**
+     * Returns overview graph datasets for the current user.
+     *
+     * @param oAuth2User authenticated OAuth2 principal
+     * @param zoneId user time zone id
+     * @return overview graph payload
+     */
     @GetMapping("/overview/graphs")
     public ResponseEntity<OverviewGraphsDashboardDTO> getOverviewGraphData(@AuthenticationPrincipal OAuth2User oAuth2User,  @RequestParam String zoneId) {
         User user = userProvider.oauthToUser(oAuth2User);
@@ -119,6 +142,14 @@ public class DashboardController {
         ));
     }
 
+    /**
+     * Returns overview statistics for a selected interval.
+     *
+     * @param oAuth2User authenticated OAuth2 principal
+     * @param interval optional interval selector
+     * @param zoneId user time zone id
+     * @return overview statistics payload
+     */
     @GetMapping("/overview/stats")
     public ResponseEntity<OverviewStatsDashboardDTO> getOverviewStatsData(@AuthenticationPrincipal OAuth2User oAuth2User,
         @RequestParam(name = "interval", required = false) String interval,  @RequestParam String zoneId) {

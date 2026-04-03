@@ -1,7 +1,6 @@
 package cz.cvut.fel.thesis.dao;
 
 import cz.cvut.fel.thesis.model.Issue;
-import cz.cvut.fel.thesis.model.Label;
 import cz.cvut.fel.thesis.model.Session;
 import cz.cvut.fel.thesis.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;

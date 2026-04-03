@@ -126,7 +126,7 @@ export function IssueCard({
               let currentChars = 0;
               const displayedLabels = [];
               let remaining = 0;
-
+              // limit the amount of characters used for labels, if there are too many, show "+X more"
               for (const label of issue.labels || []) {
                 if (displayedLabels.length === 0 || currentChars + label.name.length <= maxChars) {
                   displayedLabels.push(label);

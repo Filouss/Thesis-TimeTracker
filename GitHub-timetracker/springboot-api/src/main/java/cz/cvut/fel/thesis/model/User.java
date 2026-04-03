@@ -7,6 +7,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Represents an application user and their tracked sessions.
+ */
 @Entity
 @Table(name = "app_user")
 public class User {
@@ -53,6 +56,10 @@ public class User {
         return pinnedIssueGithubIds;
     }
 
+    public void setPinnedIssueGithubIds(Set<Long> toSet){
+        this.pinnedIssueGithubIds = toSet;
+    }
+
     public void setTracking(boolean tracking) {
         this.tracking = tracking;
     }
@@ -72,6 +79,12 @@ public class User {
     public Long getGitHubID() {
         return gitHubID;
     }
+
+    
+    public void setSessions(List<Session> toSet){
+        this.sessions = toSet;
+    }
+
 
     public void setGitHubID(long gitHubID) {
         this.gitHubID = gitHubID;

@@ -11,7 +11,6 @@ import java.util.Optional;
 
 public interface RepositoryDAO extends JpaRepository<Repository, Long> {
     Optional<Repository> findByOwnerAndName(String owner, String name);
-    // List<Repository> findByNameContainingIgnoreCase(String name);
 
     @Query("""
         SELECT DISTINCT r.name 

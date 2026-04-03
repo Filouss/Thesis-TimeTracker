@@ -1,7 +1,9 @@
+C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\client\GitHubAPIClient.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\configuration\GitHubClientConfig.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\configuration\GlobalExceptionHandler.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\configuration\SecurityConfig.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\controller\DashboardController.java
+C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\controller\ExportController.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\controller\IssueController.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\controller\SessionController.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\controller\UserController.java
@@ -12,6 +14,10 @@ C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-time
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dao\TimeBlockDAO.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dao\UserDAO.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\CommentDTO.java
+C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\DailyTimeTrackDTO.java
+C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\ExportDTO.java
+C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\ExportItem.java
+C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\ExportRequestData.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\GitHubIssueDTO.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\GitHubRepositoryDTO.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\GitHubUserDTO.java
@@ -19,11 +25,13 @@ C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-time
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\IssueDTO.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\IssueRankDTO.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\IssueRequestData.java
-C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\IssueSearchResponseDTO.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\LabelDTO.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\NotesDTO.java
-C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\OverviewDashboardDTO.java
+C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\OverviewGraphsDashboardDTO.java
+C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\OverviewLabelTimeDTO.java
+C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\OverviewStatsDashboardDTO.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\SessionDTO.java
+C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\suggestionDTO.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\SyncSessionRequest.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\TimeBlockDTO.java
 C:\Users\admin\skola\programovani\bakalarka\sarovfil-bakalarskaprace\GitHub-timetracker\springboot-api\src\main\java\cz\cvut\fel\thesis\dto\UpdateIssueRequest.java

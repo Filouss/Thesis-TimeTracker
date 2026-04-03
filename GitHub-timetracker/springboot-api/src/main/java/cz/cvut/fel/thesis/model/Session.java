@@ -7,6 +7,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a time tracking session linked to a GitHub issue and user.
+ */
 @Entity
 public class Session {
 

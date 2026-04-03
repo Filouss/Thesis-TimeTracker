@@ -125,7 +125,7 @@
   color: #888;
 }
 
-.homeCard-list .issue-number {
+.homeCard-list .issue-number, .tracking-wrapper .issue-number {
   color: rgb(106, 163, 173);
   font-size: 12pt;
 }

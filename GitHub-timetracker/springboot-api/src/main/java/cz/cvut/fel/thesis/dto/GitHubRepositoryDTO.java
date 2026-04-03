@@ -3,6 +3,7 @@ package cz.cvut.fel.thesis.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+//tohle asi smazat
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record GitHubRepositoryDTO(
         Long id,

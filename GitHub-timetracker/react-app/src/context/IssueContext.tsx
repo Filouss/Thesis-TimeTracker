@@ -37,7 +37,6 @@ type HomeIssuesData = {
 
 type IssueContextType = {
     data: HomeIssuesData | null;
-    // setData: (data: HomeIssuesData) => void;
     loading: boolean;
     refetch: () => void;
 }

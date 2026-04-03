@@ -1,7 +1,6 @@
 import {  useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCardActions } from "../../hooks/useCardActions";
-// import { useGetIssues } from "../../hooks/useGetIssues";
 import { IssueCard } from "./IssueCard";
 import { SessionCard } from "./SessionCard";
 import { ConfirmModal } from "../modals/ConfirmModal";
@@ -34,7 +33,7 @@ export default function HomeContent() {
     const [confirmTitle, setConfirmTitle] = useState("");
     const [confirmAction, setConfirmAction] = useState<((notes?: string) => void) | null>(null);
 
-    const handleSaveSession = async (sessionId: number, timeblocks: {start: string, end: string}[], notes: string, synced: boolean ,issueUrl?: string) => {
+    async function handleSaveSession(sessionId: number, timeblocks: {start: string, end: string}[], notes: string, synced: boolean ,issueUrl?: string) {
         try {
             setEditError("");
             await editSession(sessionId, timeblocks, notes, synced, issueUrl);
@@ -74,9 +73,6 @@ export default function HomeContent() {
     if (!data) return <div>Error loading data.</div>;
 
     const isCurrentIssuePinned = data.tracking && data.pinned.some(pinnedIssue => pinnedIssue.id === data.tracking?.id);
-    
-    console.log("home data")
-    console.log(data);
 
     return (
         <div className="homepage-content">

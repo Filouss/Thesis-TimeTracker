@@ -21,8 +21,6 @@ export function ExportModal({onCancel} : EditSessionModalProps) {
     const [showRepoSuggestions, setShowRepoSuggestions] = useState(false);
     const [showIssueSuggestions, setShowIssueSuggestions] = useState(false);
 
-    console.log("issue "+showIssueSuggestions)
-    console.log("repo " + showRepoSuggestions)
     return (
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modal edit-modal" onClick={e => e.stopPropagation()}>

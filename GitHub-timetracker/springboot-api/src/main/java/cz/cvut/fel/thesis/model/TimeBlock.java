@@ -6,6 +6,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
 
+/**
+ * Represents a tracked time interval within a session.
+ */
 @Entity
 public class TimeBlock {
     @Id

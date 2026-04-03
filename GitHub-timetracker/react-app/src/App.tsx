@@ -8,6 +8,8 @@ import TopBar from "./components/nav/TopBar";
 import HistoryPage from "./pages/HistoryPage";
 import OverViewPage from "./pages/OverviewPage";
 
+import { ProtectedRoute } from "./pages/ProtectedRoute";
+
 export default function App() {
     const location = useLocation();
 
@@ -18,11 +20,11 @@ export default function App() {
                     <Routes>
                         <Route path="/" element={<RootRedirect/>} />
                         <Route path="/landing" element={<LandingPage/>} />
-                        <Route path="/home" element={<HomePage/>} />
-                        <Route path="/issues/:id" element={<IssueDetailPage/>} />
-                        <Route path="/issues/:id/history" element={<HistoryPage/>} />
-                        <Route path="/history" element={<HistoryPage/>} />
-                        <Route path="/overview" element={<OverViewPage/>} />
+                        <Route path="/home" element={<ProtectedRoute><HomePage/></ProtectedRoute>} />
+                        <Route path="/issues/:id" element={<ProtectedRoute><IssueDetailPage/></ProtectedRoute>} />
+                        <Route path="/issues/:id/history" element={<ProtectedRoute><HistoryPage/></ProtectedRoute>} />
+                        <Route path="/history" element={<ProtectedRoute><HistoryPage/></ProtectedRoute>} />
+                        <Route path="/overview" element={<ProtectedRoute><OverViewPage/></ProtectedRoute>} />
                     </Routes>
                 </main>
         </IssueProvider>

@@ -45,20 +45,20 @@ export default function HistoryContent({
   const [descDirection, setDescDirection] = useState(true)
   const [sortBy, setSortBy] = useState("createdAt")
 
-  const toggleExpand = (id: number) => {
+  async function toggleExpand(id: number) {
     setExpandedId(expandedId === id ? null : id);
-  };
+  }
 
   const totalPages = Math.ceil(sessions.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentSessions = sessions.slice(startIndex, startIndex + itemsPerPage);
 
-  const formatDate = (timeblocks: { start: string, end: string }[]) => {
+  async function formatDate(timeblocks: { start: string, end: string }[]) {
     if (!timeblocks || timeblocks.length === 0) return "N/A";
     return new Date(timeblocks[0].start).toLocaleDateString();
   };
 
-  const handleSaveSession = async (sessionId: number, timeblocks: { start: string, end: string }[], notes: string, synced: boolean, issueUrl?: string) => {
+  async function handleSaveSession(sessionId: number, timeblocks: { start: string, end: string }[], notes: string, synced: boolean, issueUrl?: string) {
     try {
       setEditError("");
       await editSession(sessionId, timeblocks, notes, synced, issueUrl);
@@ -111,7 +111,8 @@ export default function HistoryContent({
           error={editError}
         />
       )}
-      <div className="history-container">
+      {sessions ? (
+          <div className="history-container">
         <h2 className="page-title">Tracked sessions history</h2>
         {/* Table Header */}
         <div className="history-table-header">
@@ -229,6 +230,9 @@ export default function HistoryContent({
 
 
       </div>
+      ) : (
+        <p>No sessions tracked.</p>
+      )}
       {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="pagination-bar">

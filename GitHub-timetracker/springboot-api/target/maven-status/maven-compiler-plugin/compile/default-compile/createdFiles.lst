@@ -9,7 +9,6 @@ cz\cvut\fel\thesis\configuration\SecurityConfig.class
 cz\cvut\fel\thesis\service\UserService.class
 cz\cvut\fel\thesis\service\SessionService.class
 cz\cvut\fel\thesis\exceptions\NoActiveSessionException.class
-cz\cvut\fel\thesis\dto\OverviewDashboardDTO.class
 cz\cvut\fel\thesis\service\FormatService.class
 cz\cvut\fel\thesis\service\GitHubOAuthService.class
 cz\cvut\fel\thesis\dao\SessionDAO.class
@@ -30,7 +29,6 @@ cz\cvut\fel\thesis\dto\IssueRequestData.class
 cz\cvut\fel\thesis\configuration\GlobalExceptionHandler.class
 cz\cvut\fel\thesis\dto\GitHubRepositoryDTO.class
 cz\cvut\fel\thesis\dto\GitHubIssueDTO.class
-cz\cvut\fel\thesis\dto\IssueSearchResponseDTO.class
 cz\cvut\fel\thesis\dao\TimeBlockDAO.class
 cz\cvut\fel\thesis\dao\UserDAO.class
 cz\cvut\fel\thesis\dto\SyncSessionRequest.class

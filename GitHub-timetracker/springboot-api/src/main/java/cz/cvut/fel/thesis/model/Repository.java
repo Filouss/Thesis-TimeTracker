@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 
 import java.util.Set;
 
+/**
+ * Represents a GitHub repository tracked by the application.
+ */
 @Entity
 @Table(
         uniqueConstraints = @UniqueConstraint(columnNames = {"owner", "name"})

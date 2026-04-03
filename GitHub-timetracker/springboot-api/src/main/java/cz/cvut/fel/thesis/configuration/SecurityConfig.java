@@ -1,6 +1,7 @@
 package cz.cvut.fel.thesis.configuration;
 
 import cz.cvut.fel.thesis.service.GitHubOAuthService;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
 
@@ -12,6 +13,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -29,11 +32,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+//                .csrf(csrf -> csrf
+//    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+//    .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/error", "/webjars/**").permitAll()
                         .anyRequest().authenticated()
+                )
+                .logout(logout -> logout
+                    .logoutUrl("/logout")
+                    .logoutSuccessHandler((request, response, authentication) -> {
+                        response.setStatus(HttpServletResponse.SC_OK);
+                    })
+                    .deleteCookies("JSESSIONID")
+                    .invalidateHttpSession(true)
+                    .clearAuthentication(true)
                 )
                 //add custom logic after oauth to create user in db
                 .oauth2Login(oauth -> oauth

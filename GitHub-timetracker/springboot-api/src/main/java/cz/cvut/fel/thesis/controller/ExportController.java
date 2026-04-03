@@ -24,6 +24,9 @@ import cz.cvut.fel.thesis.service.SessionService;
 import cz.cvut.fel.thesis.utils.CurrentUserProvider;
 
 
+/**
+ * Provides export suggestions and generated export data.
+ */
 @RestController
 @RequestMapping("/export")
 public class ExportController {
@@ -37,18 +40,39 @@ public class ExportController {
     @Autowired
     private SessionService sessionService;
 
+    /**
+     * Returns repository name suggestions for export filtering.
+     *
+     * @param oAuth2User authenticated OAuth2 principal
+     * @param query search text
+     * @return repository suggestions
+     */
     @GetMapping("/repo")
     public ResponseEntity<suggestionDTO> getRepoSuggestions(@AuthenticationPrincipal OAuth2User oAuth2User, @RequestParam String query){
         User user = userProvider.oauthToUser(oAuth2User);
         return ResponseEntity.ok(new suggestionDTO(issueService.getRepoNamesForQuery(query, user)));
     }
 
+    /**
+     * Returns issue title suggestions for export filtering.
+     *
+     * @param oAuth2User authenticated OAuth2 principal
+     * @param query search text
+     * @return issue suggestions
+     */
     @GetMapping("/issue")
     public ResponseEntity<suggestionDTO> getIssueSuggestions(@AuthenticationPrincipal OAuth2User oAuth2User, @RequestParam String query){
         User user = userProvider.oauthToUser(oAuth2User);
         return ResponseEntity.ok(new suggestionDTO(issueService.getIssueNamesForQuery(query,user)));
     }    
 
+    /**
+     * Produces export data for selected filters and interval.
+     *
+     * @param oAuth2User authenticated OAuth2 principal
+     * @param reqData request payload with export filters
+     * @return export result items
+     */
     @PostMapping
     public ResponseEntity<ExportDTO> getExportData(@AuthenticationPrincipal OAuth2User oAuth2User, @RequestBody ExportRequestData reqData){
         User user = userProvider.oauthToUser(oAuth2User);

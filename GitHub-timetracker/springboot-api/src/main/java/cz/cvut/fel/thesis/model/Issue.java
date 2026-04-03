@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Represents a GitHub issue tracked by the application.
+ */
 @Entity
 public class Issue {
     @Id
@@ -47,6 +50,10 @@ public class Issue {
 
     public Long getGithubCommentId() {
         return githubCommentId;
+    }
+
+    public void setSessions(List<Session> toSet){
+        this.sessions = toSet;
     }
 
     public void setGithubCommentId(Long githubCommentId) {

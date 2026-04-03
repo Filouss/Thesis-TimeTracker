@@ -9,9 +9,18 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.io.NotActiveException;
 import java.util.Map;
 
+/**
+ * Centralized exception handling for REST controllers.
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+        /**
+         * Converts {@link UserNotFoundException} into an HTTP 404 response payload.
+         *
+         * @param ex raised exception
+         * @return response entity with error details
+         */
     @ExceptionHandler
     public ResponseEntity<Object> handleUserNotFound(UserNotFoundException ex){
         return ResponseEntity
@@ -23,6 +32,12 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+        /**
+         * Converts {@link NotActiveException} into an HTTP 400 response payload.
+         *
+         * @param ex raised exception
+         * @return response entity with error details
+         */
     @ExceptionHandler
     public ResponseEntity<Object> handleNotActiveSession(NotActiveException ex){
         return ResponseEntity

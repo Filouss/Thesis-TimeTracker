@@ -109,7 +109,8 @@ export function useCardActions(refetch?: () => void) {
     }
 
     async function deleteSession(sessionId: number) {
-        await http.delete(`/session/${sessionId}/delete`);
+        const zoneId = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        await http.delete(`/session/${sessionId}/delete?zoneId=${encodeURIComponent(zoneId)}`);
         refetch?.();
     }
 
