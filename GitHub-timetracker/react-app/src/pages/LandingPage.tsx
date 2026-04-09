@@ -21,12 +21,12 @@ export default function LandingPage() {
 
             <section className="features-grid">
                 <div className="glass-card">
-                    <div className="icon-circle">📊</div>
+                    <div className="icon-circle">⚙️</div>
                     <h3>Native Integration</h3>
                     <p>Fetches your assigned GitHub issues automatically. No manual entry.</p>
                 </div>
                 <div className="glass-card">
-                    <div className="icon-circle">⏱️</div>
+                    <div className="icon-circle">📊</div>
                     <h3>Deep Analytics</h3>
                     <p>Beautiful charts show exactly where your time goes each week.</p>
                 </div>

@@ -41,8 +41,8 @@ export function EditSessionModal({ session, onSave, onCancel, error }: EditSessi
       const currentUrl = `https://github.com/${session.issue.repoOwner}/${session.issue.repoName}/issues/${session.issue.number}`;
       setIssueUrl(currentUrl);
       setParsedIssue({
-        owner: session.issue.repoOwner.split('/')[0],
-        repo: session.issue.repoName.split('/')[1],
+        owner: session.issue.repoOwner,
+        repo: session.issue.repoName,
         issueNumber: session.issue.number
       });
     }

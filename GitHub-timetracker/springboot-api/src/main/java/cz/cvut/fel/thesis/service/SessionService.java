@@ -34,16 +34,10 @@ public class SessionService {
     private SessionDAO sessionDAO;
 
     @Autowired
-    private RepositoryDAO repositoryDAO;
-
-    @Autowired
     private IssueDAO issueDAO;
 
     @Autowired
     private TimeBlockDAO timeBlockDAO;
-
-    @Autowired
-    private LabelDAO labelDAO;
 
     @Autowired
     private UserDAO userDAO;
@@ -68,6 +62,7 @@ public class SessionService {
      */
     @Transactional
     public void startSession(int issueNumber, String repo, String owner, User user) {
+        //check for tracking, end if needed
         if (user.isTracking()) {
             try {
                 endSession(user, null);
@@ -83,8 +78,8 @@ public class SessionService {
             throw new UnassignedIssueException(HttpStatus.BAD_REQUEST, "Can't start a session for an unassigned issue");
         }
 
-        Repository repository = getOrCreateRepository(repo, owner);
-        Set<Label> labels = getOrCreateLabels(fetchedIssue);
+        Repository repository = issueService.getOrCreateRepository(repo, owner);
+        Set<Label> labels = issueService.getOrCreateLabels(fetchedIssue);
         Issue issue = issueService.getOrCreateIssue(issueNumber, fetchedIssue, repository, labels);
         Session session = createSession(user, issue);
         createTimeBlock(session);
@@ -188,17 +183,20 @@ public class SessionService {
         }
         Issue issue = session.getIssue();
         issue.getSessions().remove(session);
+        //if the issue has no synced sessions, delete the comment
         if (issue.getSessions().stream().noneMatch(Session::isSynced) && issue.getGithubCommentId() != null) {
             try {
                 gitHubAPIClient.deleteComment(issue);
             } catch (WebClientResponseException.NotFound e) {
-                // TODO: Comment already gone
+                //comment already deleted
+                return;
             }
             issue.setGithubCommentId(null);
             issueDAO.save(issue);
             sessionDAO.delete(session);
             return;
         }
+        //edit the github comment after session deletion
         String body = syncFormatService.buildSessionComments(session.getIssue(), userZoneId);
         if (issue.getGithubCommentId() == null) {
             // no comment created yet, no need to fetch
@@ -240,10 +238,12 @@ public class SessionService {
             }
             Issue toSet = issueDAO.findByGithubId(fetchedIssue.id()).orElse(null);
             if (toSet != null) {
+                //issue already created in db
                 existingSession.setIssue(toSet);
             } else {
-                Repository repository = getOrCreateRepository(fetchedIssue.repoName(), fetchedIssue.repoOwnerFromUrl());
-                Set<Label> labels = getOrCreateLabels(fetchedIssue);
+                //issue not found in db, create it
+                Repository repository = issueService.getOrCreateRepository(fetchedIssue.repoName(), fetchedIssue.repoOwnerFromUrl());
+                Set<Label> labels = issueService.getOrCreateLabels(fetchedIssue);
                 Issue toSave = issueService.getOrCreateIssue(updateIssue.issueNumber(), fetchedIssue, repository,
                         labels);
                 existingSession.setIssue(toSave);
@@ -339,48 +339,6 @@ public class SessionService {
     }
 
     /**
-     * Returns an existing repository or creates a new one.
-     *
-     * @param repoName repository name
-     * @param owner repository owner
-     * @return repository entity
-     */
-    private Repository getOrCreateRepository(String repoName, String owner) {
-        return repositoryDAO
-                .findByOwnerAndName(owner, repoName)
-                .orElseGet(() -> {
-                    Repository newRepo = new Repository();
-                    newRepo.setName(repoName);
-                    newRepo.setOwner(owner);
-                    return repositoryDAO.save(newRepo);
-                });
-    }
-
-    /**
-     * Returns persisted labels for a GitHub issue, creating missing labels as needed.
-     *
-     * @param fetchedIssue GitHub issue payload
-     * @return persisted label set
-     */
-    private Set<Label> getOrCreateLabels(GitHubIssueDTO fetchedIssue) {
-        Set<Label> labels = new HashSet<>();
-
-        for (LabelDTO labelDTO : fetchedIssue.labels()) {
-            Label label = labelDAO
-                    .findByGitHubID(labelDTO.id())
-                    .orElseGet(() -> {
-                        Label newLabel = new Label();
-                        newLabel.setGitHubID(labelDTO.id());
-                        newLabel.setTitle(labelDTO.name());
-                        return newLabel;
-                    });
-            label.setColorHEX(labelDTO.color());
-            labels.add(labelDAO.save(label));
-        }
-        return labels;
-    }
-
-    /**
      * Returns sessions for a user with the requested sort order.
      *
      * @param user application user
@@ -394,7 +352,7 @@ public class SessionService {
         if (direction == null)
             direction = "desc";
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-        return sessionDAO.findByUser(user, sort);
+        return sessionDAO.findByUserAndFinishedTrue(user, sort);
     }
 
     /**
@@ -438,16 +396,10 @@ public class SessionService {
         sessionDAO.save(toSync);
         String body = syncFormatService.buildSessionComments(toSync.getIssue(), userZoneId);
 
-        // if (commentId == null) {
-        // addSessionComment(toSync, notes, userZoneId);
-        // return;
-        // }
-
         try {
             gitHubAPIClient.editComment(toSync, body, commentId);
         } catch (WebClientResponseException.NotFound e) {
             // comment deleted or inaccessible
-            // todo refactor to a method in webclient
             CommentDTO commentDTO = gitHubAPIClient.createIssueComment(toSync.getIssue(), body);
             if (commentDTO != null) {
                 toSync.getIssue().setGithubCommentId(commentDTO.id());
@@ -539,37 +491,19 @@ public class SessionService {
         if (direction == null)
             direction = "desc";
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-        List<Session> sessions = sessionDAO.findByIssueAndUser(issue, user, sort);
-        List<SessionDTO> dtos = sessions.stream()
-                .map(session -> new SessionDTO(
-                        session.getId(),
-                        session.isSynced(),
-                        session.getTimeBlocks().stream()
-                                .map(tb -> new TimeBlockDTO(
-                                        tb.getStartDate(),
-                                        tb.getEndDate()))
-                                .toList(),
-                        new IssueDTO(
-                                session.getIssue().getId(),
-                                session.getIssue().getTitle(),
-                                session.getIssue().getIssueNumber(),
-                                session.getIssue().getGithubId(),
-                                session.getIssue().getLabels().stream()
-                                        .map(label -> new LabelDTO(
-                                                label.getId(),
-                                                label.getTitle(),
-                                                label.getColorHEX()))
-                                        .toList(),
-                                session.getIssue().getRepository().getName(),
-                                session.getIssue().getRepository().getOwner()),
-                        session.isPaused(),
-                        session.getNotes(),
-                        session.getDuration().getSeconds()))
+        List<Session> sessions = sessionDAO.findByIssueAndUser(issue, user, sort).stream().filter(Session::isFinished).toList();
+        return sessions.stream()
+                .map(SessionDTO::fromEntity)
                 .toList();
-
-        return dtos;
     }
 
+    /**
+     * Calculates the time tracked for each day of the current week summary.
+     *
+     * @param user       application user
+     * @param userZoneId user time zone
+     * @return a list representing tracked time per day
+     */
     public List<DailyTimeTrackDTO> secondsTrackedPerDayThisWeek(User user, ZoneId userZoneId) {
         Instant intervalStart = getIntervalStart("ThisWeek", userZoneId);
         Instant intervalEnd = getIntervalend("ThisWeek", userZoneId);
@@ -579,14 +513,9 @@ public class SessionService {
             dailyAccumulator.put(day, 0L);
         }
 
-        sessionDAO.findByUser(user).forEach(session -> {
-            if (session.getTimeBlocks() != null && session.isFinished()) {
-                if (!session.getCreatedAt().isBefore(intervalStart) && session.getCreatedAt().isBefore(intervalEnd)) {
-                    // Discover which day of the week this timeblock started on
-                    java.time.DayOfWeek day = session.getCreatedAt().atZone(userZoneId).getDayOfWeek();
-                    dailyAccumulator.put(day, dailyAccumulator.get(day) + session.getDuration().getSeconds());
-                }
-            }
+        sessionDAO.findFinishedSessionsInInterval(user, intervalStart, intervalEnd).forEach(session -> {
+            java.time.DayOfWeek day = session.getCreatedAt().atZone(userZoneId).getDayOfWeek();
+            dailyAccumulator.put(day, dailyAccumulator.get(day) + session.getDuration().getSeconds());
         });
 
         List<DailyTimeTrackDTO> toReturn = new ArrayList<>();
@@ -600,6 +529,14 @@ public class SessionService {
         return toReturn;
     }
 
+    /**
+     * Calculates the total tracked time for a user within a specific interval.
+     *
+     * @param user       application user
+     * @param interval   reporting interval (default is "ThisWeek")
+     * @param userZoneId user time zone
+     * @return total tracked seconds
+     */
     public Long secondsTrackedForInterval(User user, String interval, ZoneId userZoneId) {
         if (interval == null)
             interval = "ThisWeek";
@@ -607,15 +544,8 @@ public class SessionService {
         Instant intervalStart = getIntervalStart(interval, userZoneId);
         Instant intervalEnd = getIntervalend(interval, userZoneId);
 
-        long totalSeconds = 0;
-        for (Session session : sessionDAO.findByUser(user)) {
-            if (session.getTimeBlocks() != null && session.isFinished()) {
-                if (!session.getCreatedAt().isBefore(intervalStart) && session.getCreatedAt().isBefore(intervalEnd)) {
-                    totalSeconds += session.getDuration().getSeconds();
-                }
-            }
-        }
-        return totalSeconds;
+        Long totalSeconds = sessionDAO.sumTimeTrackedByUserAndInterval(user, intervalStart, intervalEnd);
+        return totalSeconds != null ? totalSeconds : 0L;
     }
 
     /**
@@ -687,27 +617,14 @@ public class SessionService {
 
         List<Float> sessionRatios = new ArrayList<>();
 
-        for (Session session : sessionDAO.findByUser(user)) {
-            if (session.getTimeBlocks() != null && session.isFinished()) {
-                // check if this session was started within the requested interval
-                Instant sessionStart = session.getCreatedAt();
-                if (sessionStart != null && !sessionStart.isBefore(intervalStart)
-                        && sessionStart.isBefore(intervalEnd)) {
-
-                    TimeBlock mostRecentTb = session.getMostRecentTimeBlock();
-                    if (mostRecentTb != null && mostRecentTb.getEndDate() != null) {
-
-                        long totalGrossSeconds = Duration.between(sessionStart, mostRecentTb.getEndDate()).getSeconds();
-                        long totalWorkedSeconds = session.getDuration().getSeconds();
-
-                        // Prevent division by zero if a session was started and finished inside the
-                        // exact same second
-                        if (totalGrossSeconds > 0) {
-                            // working time divided by Gross (total) time
-                            float ratio = (float) totalWorkedSeconds / totalGrossSeconds;
-                            sessionRatios.add(ratio);
-                        }
-                    }
+        for (Session session : sessionDAO.findFinishedSessionsInInterval(user, intervalStart, intervalEnd)) {
+            TimeBlock mostRecentTb = session.getMostRecentTimeBlock();
+            if (mostRecentTb != null && mostRecentTb.getEndDate() != null) {
+                long totalGrossSeconds = Duration.between(session.getCreatedAt(), mostRecentTb.getEndDate()).getSeconds();
+                long totalWorkedSeconds = session.getDuration().getSeconds();
+                if (totalGrossSeconds > 0) {
+                    float ratio = (float) totalWorkedSeconds / totalGrossSeconds;
+                    sessionRatios.add(ratio);
                 }
             }
         }
@@ -731,37 +648,21 @@ public class SessionService {
      * @return ranked issues with an optional "Other" bucket
      */
     public List<IssueRankDTO> getRankedIssues(User user) {
-        Map<Long, Issue> issueMap = new HashMap<>();
-        Map<Long, Long> timeMap = new HashMap<>();
-
-        for (Session session : sessionDAO.findByUser(user)) {
-            // Only aggregate finished sessions
-            if (session.getIssue() != null && session.isFinished()) {
-                Issue issue = session.getIssue();
-                long seconds = session.getDuration().getSeconds();
-                issueMap.put(issue.getId(), issue);
-                timeMap.put(issue.getId(), timeMap.getOrDefault(issue.getId(), 0L) + seconds);
-            }
-        }
-
-        // Sort descending by time tracked
-        List<Map.Entry<Long, Long>> sortedEntries = new ArrayList<>(timeMap.entrySet());
-        sortedEntries.sort(Map.Entry.<Long, Long>comparingByValue().reversed());
+        List<Object[]> queryResults = sessionDAO.getTopIssuesByTime(user);
 
         List<IssueRankDTO> result = new ArrayList<>();
         long otherTimeTracked = 0L;
 
-        for (int i = 0; i < sortedEntries.size(); i++) {
-            Map.Entry<Long, Long> entry = sortedEntries.get(i);
-            Issue issue = issueMap.get(entry.getKey());
+        for (int i = 0; i < queryResults.size(); i++) {
+            Object[] row = queryResults.get(i);
+            Issue issue = (Issue) row[0];
+            Long totalTime = (Long) row[1];
+            if (totalTime == null) totalTime = 0L;
 
             if (i < 5) {
-                result.add(new IssueRankDTO(
-                        issue.getTitle(),
-                        issue.getIssueNumber(),
-                        entry.getValue()));
+                result.add(new IssueRankDTO(issue.getTitle(), issue.getIssueNumber(), totalTime));
             } else {
-                otherTimeTracked += entry.getValue();
+                otherTimeTracked += totalTime;
             }
         }
 
@@ -780,28 +681,14 @@ public class SessionService {
      * @return tracked time per label
      */
     public List<OverviewLabelTimeDTO> getTimePerLabel(User user) {
-        Map<Long, Label> labelMap = new HashMap<>();
-        Map<Long, Long> timeMap = new HashMap<>();
-
-        for (Session session : sessionDAO.findByUser(user)) {
-            if (session.getIssue() != null && session.isFinished()) {
-                Set<Label> labels = session.getIssue().getLabels();
-                long seconds = session.getDuration().getSeconds();
-                for (Label label : labels) {
-                    labelMap.put(label.getId(), label);
-                    timeMap.put(label.getId(), timeMap.getOrDefault(label.getId(), 0L) + seconds);
-                }
-
-            }
-        }
-
+        List<Object[]> queryResults = sessionDAO.getTimeTrackedPerLabel(user);
         List<OverviewLabelTimeDTO> toReturn = new ArrayList<>();
-        for (Map.Entry<Long, Long> entry : timeMap.entrySet()) {
-            Label label = labelMap.get(entry.getKey());
-            toReturn.add(new OverviewLabelTimeDTO(
-                    label.getTitle(),
-                    label.getColorHEX(),
-                    entry.getValue()));
+
+        for (Object[] row : queryResults) {
+            Label label = (Label) row[0];
+            Long totalTime = (Long) row[1];
+            if (totalTime == null) totalTime = 0L;
+            toReturn.add(new OverviewLabelTimeDTO(label.getTitle(), label.getColorHEX(), totalTime));
         }
         return toReturn;
     }
@@ -820,7 +707,7 @@ public class SessionService {
             ZoneId userZoneId) {
         Instant start = getIntervalStart(interval, userZoneId);
         Instant end = getIntervalend(interval, userZoneId);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(userZoneId);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(userZoneId);
 
         List<Session> sessions = sessionDAO.findSessionsForExport(user, repoName, issueTitle, start, end);
 

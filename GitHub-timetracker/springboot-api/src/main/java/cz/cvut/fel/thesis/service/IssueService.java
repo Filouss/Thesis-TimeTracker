@@ -1,20 +1,22 @@
 package cz.cvut.fel.thesis.service;
 
 import cz.cvut.fel.thesis.dao.IssueDAO;
+import cz.cvut.fel.thesis.dao.LabelDAO;
 import cz.cvut.fel.thesis.dao.RepositoryDAO;
 import cz.cvut.fel.thesis.dao.SessionDAO;
 import cz.cvut.fel.thesis.dao.UserDAO;
 import cz.cvut.fel.thesis.dto.GitHubIssueDTO;
+import cz.cvut.fel.thesis.dto.LabelDTO;
 import cz.cvut.fel.thesis.exceptions.UnassignedIssueException;
 import cz.cvut.fel.thesis.model.*;
-import cz.cvut.fel.thesis.client.*;
+import cz.cvut.fel.thesis.client.GitHubAPIClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +40,9 @@ public class IssueService {
 
     @Autowired
     private GitHubAPIClient gitHubAPIClient;
+
+    @Autowired
+    private LabelDAO labelDAO;
 
     /**
      * Returns issues currently assigned to the authenticated user from GitHub.
@@ -201,5 +206,49 @@ public class IssueService {
         return issueDAO.findIssueSuggestionsForUser(user, query);
         
     }
+
+    
+    /**
+     * Returns an existing repository or creates a new one.
+     *
+     * @param repoName repository name
+     * @param owner repository owner
+     * @return repository entity
+     */
+    public Repository getOrCreateRepository(String repoName, String owner) {
+        return repositoryDAO
+                .findByOwnerAndName(owner, repoName)
+                .orElseGet(() -> {
+                    Repository newRepo = new Repository();
+                    newRepo.setName(repoName);
+                    newRepo.setOwner(owner);
+                    return repositoryDAO.save(newRepo);
+                });
+    }
+
+    /**
+     * Returns persisted labels for a GitHub issue, creating missing labels as needed.
+     *
+     * @param fetchedIssue GitHub issue payload
+     * @return persisted label set
+     */
+    public Set<Label> getOrCreateLabels(GitHubIssueDTO fetchedIssue) {
+        Set<Label> labels = new HashSet<>();
+
+        for (LabelDTO labelDTO : fetchedIssue.labels()) {
+            Label label = labelDAO
+                    .findByGitHubID(labelDTO.id())
+                    .orElseGet(() -> {
+                        Label newLabel = new Label();
+                        newLabel.setGitHubID(labelDTO.id());
+                        newLabel.setTitle(labelDTO.name());
+                        return newLabel;
+                    });
+            label.setColorHEX(labelDTO.color());
+            labels.add(labelDAO.save(label));
+        }
+        return labels;
+    }
+
 
 }

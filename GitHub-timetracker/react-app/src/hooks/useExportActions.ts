@@ -25,11 +25,9 @@ export function useExportActions(){
                 setError("No data found for these parameters");
                 return;
             }
-            console.log(format)
             if(format === "csv") generateCSV(res.data.exportItems, interval);
             else generatePDF(res.data.exportItems,interval);
          } catch (e) {
-            console.log(e)
             setError("Failed to fetch export data");
             return null;
         }
@@ -59,7 +57,6 @@ export function useExportActions(){
         
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        console.log("Download triggered successfully");
     }
 
     function generatePDF(data: {issueTitle: string, repoName: string, timeTracked:number, createdAt: string}[], interval: string){

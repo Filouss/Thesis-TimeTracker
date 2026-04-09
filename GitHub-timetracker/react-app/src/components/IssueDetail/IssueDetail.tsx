@@ -6,6 +6,7 @@ import { IoIosArrowBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { ConfirmModal } from "../modals/ConfirmModal";
+import LoadingButton from "../button/LoadingButton";
 
 type ApiIssue = {
   id: number;
@@ -50,6 +51,7 @@ export default function IssueDetail({
   const repoName = issue.repository_url?.split("/").pop() || "repository";
   const navigate = useNavigate();
   const formatTime = formatTrackedTime(issue.timeTracked || 0);
+  const [isLoading, setIsLoading] = useState(false);
 
   let trackingButton;
 
@@ -58,48 +60,73 @@ export default function IssueDetail({
     if (isTracking) {
       setConfirmTitle("Are you sure you want start a new session?");
       setConfirmMessageBody("Your currently active session will be ended and moved to Ready to Sync");
-      setConfirmAction(() => () => {
-        onStartTracking(issueNumber, repository_url);
+      setConfirmAction(() => async() => {
+        await onStartTracking(issueNumber, repository_url);
       });
       setShowConfirm(true)
     } else {
-      onStartTracking(issueNumber, repository_url);
+      return onStartTracking(issueNumber, repository_url);
     }
   }
 
   if (!isCurrent) {
-    trackingButton = (
-      <button
-        className="tile-btn"
-        id="tracking"
-        onClick={() => handleStartTracking(issue.number, issue.repository_url)}
-      >
-        Start tracking <FaPlay />
-      </button>
-    );
-  } else if (isPaused) {
-    trackingButton = (
-      <button
-        id="tracking"
-        className="tile-btn"
-        onClick={() => onResumeTracking()}
-        style={{ backgroundColor: '#28a745', color: 'white', border: 'none' }}
-      >
-        Resume tracking <FaRegPlayCircle />
-      </button>
-    );
-  } else {
-    trackingButton = (
-        <button
-        id="tracking"
-          className="tile-btn"
-        onClick={() => onPauseTracking()}
-        style={{ backgroundColor: '#da7134ff', color: 'white', border: 'none' }}
-        >
-        Pause tracking <FaPause />
-        </button>
-    );
-  }
+          trackingButton = (
+            <LoadingButton
+            isLoading={isLoading}
+              className="tile-btn"
+              id="tracking"
+              onClick={async (e) =>{ 
+                e.stopPropagation();
+                setIsLoading(true);
+                try {
+                  await handleStartTracking(issue.number, issue.repository_url); 
+                } finally {
+                  setIsLoading(false); 
+                }}}
+            >
+              Track <FaPlay />
+            </LoadingButton>);
+      } else if (isPaused) {
+          trackingButton = (
+              <LoadingButton
+              isLoading={isLoading}
+              id="tracking"
+              className="tile-btn"
+              onClick={async (e) => {
+                e.stopPropagation();
+                setIsLoading(true);
+                try {
+                  await onResumeTracking();
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+              style={{ backgroundColor: '#28a745', color: 'white', border: 'none' }}
+              >
+              Resume <FaRegPlayCircle />
+              </LoadingButton>
+          );
+      } else {
+          trackingButton = (
+              <LoadingButton
+              isLoading={isLoading}
+              id="tracking"
+              className="tile-btn"
+              onClick={async (e) => {
+                e.stopPropagation();
+                setIsLoading(true);
+                try {
+                  await onPauseTracking();
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+              style={{ backgroundColor: '#da7134ff', color: 'white', border: 'none' }}
+              >
+              Pause <FaPause />
+              </LoadingButton>
+          );
+      }
 
   return (
     <div className="issue-detail-container">

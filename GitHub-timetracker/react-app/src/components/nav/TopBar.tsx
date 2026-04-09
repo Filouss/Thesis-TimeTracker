@@ -67,7 +67,7 @@ export default function TopBar(){
                         </button>
                     </div>              
                 </div>
-                <div className="topbar-logo">Timetracker</div>
+                <div className="topbar-logo">TimeTracker</div>
                 <div className="topbar-right-nav">
                     <div className="logout-btn-wrapper">
                         <button className="logout-btn" onClick={() => {

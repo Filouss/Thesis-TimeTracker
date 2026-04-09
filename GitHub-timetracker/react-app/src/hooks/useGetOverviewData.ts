@@ -2,9 +2,9 @@ import { useState } from "react"
 import { http } from "../lib/http"
 
 type GraphData = {
-    dailyData: {weekDay: string, secondsTracked: number}[],
-    rankedIssues: {title: string, number: number, timeTracked: number}[],
-    timeByLabel: {name: string, color: string, secondsTracked: number}[]
+    dailyData: { weekDay: string, secondsTracked: number }[],
+    rankedIssues: { title: string, number: number, timeTracked: number }[],
+    timeByLabel: { name: string, color: string, secondsTracked: number }[]
 }
 
 type Stats = {

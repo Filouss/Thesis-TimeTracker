@@ -3,7 +3,7 @@ import { formatTrackedTime } from "../../lib/utils";
 
 type trackedDataProps = {
     statData: Data | null,
-    onIntervalChange:  (intervalOption: string) => void;
+    onIntervalChange: (intervalOption: string) => void;
 }
 
 type Data = {
@@ -11,17 +11,15 @@ type Data = {
     workingTimeRatio: number
 }
 
-export default function TrackedTimeData({statData, onIntervalChange}: trackedDataProps) {
+export default function TrackedTimeData({ statData, onIntervalChange }: trackedDataProps) {
     const [interval, setInterval] = useState("ThisWeek");
 
-    useEffect(() =>{
-        console.log("volam interval fetch s intervalem " + interval)
+    useEffect(() => {
         onIntervalChange(interval)
     }, [interval]);
 
-    console.log(statData)
-    
-    return(
+
+    return (
         <div className="time-data-wrapper">
             <div className="data-select-wrapper">
                 <select name="interval" value={interval} onChange={e => setInterval(e.target.value)} >

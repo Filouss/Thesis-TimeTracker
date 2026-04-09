@@ -18,6 +18,7 @@ public interface SessionDAO extends JpaRepository<Session, Long> {
     Optional<Session> findByIdAndUser(Long id, User user);
     List<Session> findByIssueAndUser(Issue issue, User user);
     List<Session> findByIssueAndUser(Issue issue, User user, Sort sort);
+    List<Session> findByUserAndFinishedTrue(User user, Sort sort);
 
     @Query("""
     SELECT DISTINCT s FROM Session s 
@@ -38,4 +39,24 @@ List<Session> findSessionsForExport(
     @Param("start") Instant start, 
     @Param("end") Instant end
 );
+
+    @Query("SELECT s FROM Session s WHERE s.user = :user AND s.finished = true AND s.createdAt >= :start AND s.createdAt < :end")
+    List<Session> findFinishedSessionsInInterval(@Param("user") User user, @Param("start") Instant start, @Param("end") Instant end);
+
+    @Query("SELECT SUM(s.timeTracked) FROM Session s WHERE s.user = :user AND s.finished = true AND s.createdAt >= :start AND s.createdAt < :end")
+    Long sumTimeTrackedByUserAndInterval(@Param("user") User user, @Param("start") Instant start, @Param("end") Instant end);
+
+    @Query("SELECT i, SUM(s.timeTracked) as totalTime " +
+           "FROM Session s JOIN s.issue i " +
+           "WHERE s.user = :user AND s.finished = true " +
+           "GROUP BY i " +
+           "ORDER BY totalTime DESC")
+    List<Object[]> getTopIssuesByTime(@Param("user") User user); 
+
+    @Query("SELECT l, SUM(s.timeTracked) as totalTime " +
+           "FROM Session s JOIN s.issue i JOIN i.labels l " +
+           "WHERE s.user = :user AND s.finished = true " +
+           "GROUP BY l " +
+           "ORDER BY totalTime DESC")
+    List<Object[]> getTimeTrackedPerLabel(@Param("user") User user);
 }

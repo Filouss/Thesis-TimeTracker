@@ -2,7 +2,6 @@ package cz.cvut.fel.thesis.dto;
 
 import cz.cvut.fel.thesis.model.Session;
 
-import java.time.ZoneId;
 import java.util.List;
 
 public record SessionDTO (

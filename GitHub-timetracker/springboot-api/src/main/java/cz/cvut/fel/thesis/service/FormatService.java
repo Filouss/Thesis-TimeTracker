@@ -34,7 +34,7 @@ public class FormatService {
                     sb.append("• ")
                             .append(session.getMostRecentTimeBlock().getStartDate().atZone(userZoneId).toLocalDate())
                             .append(" — Duration: ")
-                            .append(String.format("%02dh:%02dm:%02ds", duration.toHours(), duration.toMinutesPart(), duration.toSecondsPart()));
+                            .append(formatDuration(duration));
                     if (session.getNotes() != null && !session.getNotes().isBlank()) {
                         sb.append(" — ").append(session.getNotes());
                     }
@@ -60,7 +60,7 @@ public class FormatService {
         sb.append("• ")
                 .append(toSync.getMostRecentTimeBlock().getStartDate().atZone(userZoneId).toLocalDate())
                 .append(" — Duration: ")
-                .append(String.format("%02dh:%02dm:%02ds", duration.toHours(), duration.toMinutesPart(), duration.toSecondsPart()));
+                .append(formatDuration(duration));
         if (notes != null) {
             sb.append(" — ").append(notes);
         }
@@ -69,7 +69,7 @@ public class FormatService {
         return sb.toString();
     }
 
-    // public String formatDuration(Duration duration) {
-    //     return String.format("%02dh:%02dm:%02ds", duration.toHours(), duration.toMinutesPart(), duration.toSecondsPart());
-    // }
+    public String formatDuration(Duration duration) {
+        return String.format("%02dh:%02dm", duration.toHours(), duration.toMinutesPart());
+    }
 }

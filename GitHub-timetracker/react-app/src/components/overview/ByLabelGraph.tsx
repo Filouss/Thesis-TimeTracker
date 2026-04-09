@@ -9,7 +9,6 @@ type Data = {
 
 export default function ByLabelGraph({data} : Data) {
     const chartData = data?.map(item => ({ ...item, fill: `#${item.color}` }));
-    console.log(chartData)
     
     return (
         <div className="by-label-graph-wrapper">

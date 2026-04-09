@@ -77,7 +77,7 @@ public class SessionController {
 
 
     /**
-     * Returns tracked sessions for the current user with sorting.
+     * Returns finished tracked sessions for the current user with sorting.
      *
      * @param oAuth2User authenticated OAuth2 principal
      * @param sortBy field used for sorting
@@ -88,48 +88,15 @@ public class SessionController {
     public ResponseEntity<List<SessionDTO>> getSessions(@AuthenticationPrincipal OAuth2User oAuth2User, @RequestParam(defaultValue = "createdAt") String sortBy,
     @RequestParam(defaultValue = "desc") String direction){
         User user = userProvider.oauthToUser(oAuth2User);
-        System.out.println("prisel req s temahle params " + sortBy + direction);
         List<Session> sessions = sessionService.getSessions(user, sortBy, direction);
         List<SessionDTO> sessionDTOs = sessions.stream()
-                .map(session -> new SessionDTO(
-                        session.getId(),
-                        session.isSynced(),
-                        session.getTimeBlocks().stream()
-                                .map(tb -> new TimeBlockDTO(
-                                        tb.getStartDate(),
-                                        tb.getEndDate()
-                                ))
-                                .toList(),
-                        new IssueDTO(
-                                session.getIssue().getId(),
-                                session.getIssue().getTitle(),
-                                session.getIssue().getIssueNumber(),
-                                session.getIssue().getGithubId(),
-                                session.getIssue().getLabels().stream()
-                                        .map(label -> new LabelDTO(
-                                                label.getId(),
-                                                label.getTitle(),
-                                                label.getColorHEX()
-                                        )).toList(),
-                                session.getIssue().getRepository().getName(),
-                                session.getIssue().getRepository().getOwner()
-                        ),
-                        session.isPaused(),
-                        session.getNotes(),
-                        session.getTimeBlocks().stream()
-                                .mapToLong(tb -> {
-                                    if (tb.getStartDate() == null) return 0L;
-                                    if (tb.getEndDate() == null) return 0L;
-                                    return java.time.Duration.between(tb.getStartDate(), tb.getEndDate()).getSeconds();
-                                })
-                                .sum()
-                ))
+                .map(SessionDTO::fromEntity)
                 .toList();
     return ResponseEntity.ok(sessionDTOs);
     }
 
     /**
-     * Synchronizes a session with external systems.
+     * Synchronizes a session with GitHub
      *
      * @param syncReq synchronization payload
      * @param zoneId user time zone id
@@ -204,7 +171,7 @@ public class SessionController {
     }
 
     /**
-     * Returns sessions linked to a specific GitHub issue id.
+     * Returns finished sessions linked to a specific GitHub issue id.
      *
      * @param oAuth2User authenticated OAuth2 principal
      * @param id GitHub issue id

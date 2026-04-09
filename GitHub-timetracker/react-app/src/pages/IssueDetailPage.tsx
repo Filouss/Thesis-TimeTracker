@@ -11,7 +11,6 @@ export default function IssueDetailPage(
     const {startTracking, openGithub, pauseTracking, resumeTracking} = useCardActions(refetch);
 
     const issue = data?.assigned.find(i => i.id === Number(id));
-    console.log(issue);
 
     if (!issue) {
         return <div>Loading...</div>;

@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.io.NotActiveException;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -23,13 +25,7 @@ public class GlobalExceptionHandler {
          */
     @ExceptionHandler
     public ResponseEntity<Object> handleUserNotFound(UserNotFoundException ex){
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(Map.of(
-                        "error", "User not found",
-                        "message", ex.getMessage(),
-                        "status", 404
-                ));
+        return buildResponse(HttpStatus.NOT_FOUND, "User not found", ex.getMessage());
     }
 
         /**
@@ -40,13 +36,30 @@ public class GlobalExceptionHandler {
          */
     @ExceptionHandler
     public ResponseEntity<Object> handleNotActiveSession(NotActiveException ex){
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of(
-                        "error", "No session active for this user",
-                        "message", ex.getMessage(),
-                        "status", 400
-                ));
+        return buildResponse(HttpStatus.BAD_REQUEST, "No session active", ex.getMessage());
+    }
+
+    @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
+    public ResponseEntity<Object> handleEntityNotFound(jakarta.persistence.EntityNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, "Entity not found", ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleGeneralException(Exception ex) {
+        return buildResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR, 
+            "Internal Server Error", 
+            "An unexpected error occurred. Please try again later."
+        );
+    }
+
+    private ResponseEntity<Object> buildResponse(HttpStatus status, String error, String message) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", status.value());
+        body.put("error", error);
+        body.put("message", message);
+        return new ResponseEntity<>(body, status);
     }
 
 }

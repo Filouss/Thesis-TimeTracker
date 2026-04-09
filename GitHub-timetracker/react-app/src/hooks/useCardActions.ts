@@ -17,7 +17,9 @@ export function useCardActions(refetch?: () => void) {
             repo: repo
         });
 
-        refetch?.();
+        if(refetch){
+            await refetch()
+        }
     }
     
     function openGithub(url: string) {
@@ -64,7 +66,9 @@ export function useCardActions(refetch?: () => void) {
             sessionId,
             notes,
         });
-        refetch?.();
+        if(refetch){
+            await refetch()
+        }
     }
 
     async function editSession(sessionId: number, timeblocks: {start: string, end: string}[], notes: string, synced: boolean, issueUrl?: string) {
@@ -95,12 +99,16 @@ export function useCardActions(refetch?: () => void) {
 
     async function pauseTracking(){
         await http.post("/session/pause");
-        refetch?.();
+        if(refetch){
+            await refetch()
+        }
     }
 
     async function resumeTracking(){
         await http.post("/session/resume");
-        refetch?.();
+        if(refetch){
+            await refetch()
+        }
     }
 
     async function endTracking(notes: string){

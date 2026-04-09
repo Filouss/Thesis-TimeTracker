@@ -1,18 +1,11 @@
 import { BaseCard } from "./BaseCard";
 import { formatTrackedTime } from "../../lib/utils";
-
-type Session = {
-  id: number;
-  issue: { id: number, title: string, labels: { id: number, name: string, color: string }[], repoName: string, number: number };
-  timeblocks: { start: string, end: string }[];
-  paused: boolean;
-  notes: string;
-  trackedSeconds: number;
-  synced: boolean
-};
+import LoadingButton from "../button/LoadingButton";
+import { useState } from "react";
+import type { ApiSession } from "../../types";
 
 type SessionCardProps = {
-  session: Session;
+  session: ApiSession;
   onSync?: (sessionId: number, notes: string, synced: boolean) => void;
   onEdit?: (sessionId: number) => void;
 };
@@ -23,6 +16,7 @@ export function SessionCard({
   onEdit,
 }: SessionCardProps) {
   const issue = session.issue;
+  const [isSyncing, setIsSyncing] = useState(false);
 
   return (
     <BaseCard
@@ -88,9 +82,21 @@ export function SessionCard({
             Edit
           </button>
 
-          <button className="tile-btn" onClick={() => onSync?.(session.id, session.notes, session.synced)}>
+          <LoadingButton 
+            className="tile-btn" 
+            isLoading={isSyncing}
+            onClick={async () => {
+              if (onSync) {
+                setIsSyncing(true);
+                try {
+                  await onSync(session.id, session.notes, session.synced);
+                } finally {
+                  setIsSyncing(false);
+                }
+              }
+            }}>
             Sync to GitHub
-          </button>
+          </LoadingButton>
           </div>
           
         </>

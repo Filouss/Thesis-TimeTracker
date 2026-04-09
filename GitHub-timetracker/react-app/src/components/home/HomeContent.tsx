@@ -6,16 +6,10 @@ import { SessionCard } from "./SessionCard";
 import { ConfirmModal } from "../modals/ConfirmModal";
 import { EditSessionModal } from "../modals/EditSessionModal";
 import { useIssues } from "../../context/IssueContext";
-
-type Session = {
-  id:number;
-  issue: {id: number, title: string, labels: {id:number, name: string, color: string}[], repoName: string, repoOwner: string, number: number};
-  timeblocks: {start: string, end: string}[];
-  paused: boolean;
-  notes: string;
-  trackedSeconds: number;
-  synced: boolean
-};
+import LoadingButton from "../button/LoadingButton";
+import Toast from "../modals/Toast";
+import type { ApiSession } from "../../types";
+import "../../styles/modals.css"
 
 export default function HomeContent() {
     const navigate = useNavigate();
@@ -26,18 +20,23 @@ export default function HomeContent() {
     }, [refetch]);
     const {startTracking, syncSession, openGithub, Pin, unPin, editSession, pauseTracking, resumeTracking, endTracking} = useCardActions(refetch);
     const [showConfirm, setShowConfirm] = useState(false);
-    const [editingSession, setEditingSession] = useState<Session | null>(null);
+    const [editingSession, setEditingSession] = useState<ApiSession | null>(null);
     const [editError, setEditError] = useState<string>("");
     const [showNotes, setShowNotes] = useState(false);
     const [confirmMessageBody, setConfirmMessageBody] = useState("");
     const [confirmTitle, setConfirmTitle] = useState("");
     const [confirmAction, setConfirmAction] = useState<((notes?: string) => void) | null>(null);
+    const [isSyncingAll, setIsSyncingAll] = useState(false);
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState("Action was succesful!")
 
     async function handleSaveSession(sessionId: number, timeblocks: {start: string, end: string}[], notes: string, synced: boolean ,issueUrl?: string) {
         try {
             setEditError("");
             await editSession(sessionId, timeblocks, notes, synced, issueUrl);
             setEditingSession(null);
+            setToastMessage("Session edited succefully")
+            setShowToast(true);
         } catch (error: any) {
             // Handle backend errors
             if (error.response?.data?.message) {
@@ -55,18 +54,19 @@ export default function HomeContent() {
             setConfirmTitle("Are you sure you want start a new session?");
             setConfirmMessageBody("Your currently active session will be ended and moved to Ready to Sync");
             setShowNotes(false);
-            setConfirmAction(() => () => {
-                startTracking(issueNumber, repository_url);
+            setConfirmAction(() => async () => {
+                await startTracking(issueNumber, repository_url);
             });
             setShowConfirm(true)
         } else {
-            startTracking(issueNumber, repository_url);
+            return startTracking(issueNumber, repository_url);
         }
     }
 
     async function syncAll(){
         if(data)
         await Promise.all(data.toSync.map(s => syncSession(s.id, s.notes)));
+        setIsSyncingAll(false);
     }
 
     if (loading && !data) return <div>Loading dashboard...</div>;
@@ -76,6 +76,11 @@ export default function HomeContent() {
 
     return (
         <div className="homepage-content">
+                    <Toast 
+                        isVisible={showToast} 
+                        message={toastMessage} 
+                        onClose={() => setShowToast(false)} 
+                    />
                     {showConfirm && (
                         <ConfirmModal
                             title={confirmTitle}
@@ -105,11 +110,11 @@ export default function HomeContent() {
                             <div className="issue-section-title">
                                 <div className="title-with-count">
                                     <span>Assigned Issues</span>
-                                    <span>{data.assigned.length}</span>
+                                    <span>{data?.assigned.length}</span>
                                 </div>
                             </div>
                             <div className="homeCard-list" id="assigned">
-                                {data.assigned && data.assigned.length > 0 ? (data.assigned.map((issue) => 
+                                {data.assigned && data?.assigned?.length > 0 ? (data.assigned.map((issue) => 
                                 {
                                     return(
                                     <IssueCard
@@ -187,11 +192,15 @@ export default function HomeContent() {
                                             const timeB = new Date(b.timeblocks[0]?.start || 0).getTime();
                                             return timeB - timeA;
                                         })
-                                        .map((session) => (
+                                        .map((session: ApiSession) => (
                                         <SessionCard
                                             key={session.id}
                                             session={session}
-                                            onSync={syncSession}
+                                            onSync={async (sessionId, notes) => {
+                                                await syncSession(sessionId, notes);
+                                                setToastMessage("Session synced successfully!");
+                                                setShowToast(true);
+                                            }}
                                             onEdit={(sessionId) => {
                                                 const sessionToEdit = data.toSync.find(s => s.id === sessionId);
                                                 if (sessionToEdit) setEditingSession(sessionToEdit);
@@ -208,7 +217,7 @@ export default function HomeContent() {
                 <div className="homepage-btns">
                     <button onClick={() => {
                         setConfirmTitle("Are you sure you want to end the session?");
-                        setConfirmMessageBody("You can now add any session notesand this session will be added to the Ready to sync section.");
+                        setConfirmMessageBody("You can now add any session notes and this session will be added to the Ready to sync section.");
                         setShowNotes(true);
                         setConfirmAction(() => (notes?: string) => {
                             endTracking(notes || "");
@@ -219,18 +228,26 @@ export default function HomeContent() {
                     disabled={!data.tracking}
                     className="endSessionBtn"
                     >End session</button>
-                    <button onClick={() => {
+                    <LoadingButton
+                        isLoading={isSyncingAll}
+                        onClick={() => {
                         setConfirmTitle("Are you sure you want to sync all sessions to GitHub?");
                         setConfirmMessageBody("This will update the linked issues with the tracked time and notes.");
+                        setToastMessage("All sessions synced succesfully");
                         setShowNotes(false);
                         setConfirmAction(() => () => {
+                            setIsSyncingAll(true);
                             syncAll();
+                            setShowToast(true)
                         });
                         setShowConfirm(true);
+                        
+                        
                     }}
                     disabled={data.toSync.length === 0}
                     className="syncAllBtn"
-                    >Sync all to GitHub</button>
+                    >Sync all to GitHub</LoadingButton>
+                    
                 </div>
         </div>
     )

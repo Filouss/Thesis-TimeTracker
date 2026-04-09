@@ -20,7 +20,6 @@ export function useGetHistory(issueId?: number) {
       setLoading(true);
       if(!sortBy){sortBy = "createdAt"}
       if(!direction){direction = "desc"}
-      console.log("refetch s temahle params " + sortBy + " " + direction)
       try {
         const endpoint = issueId ? `/session/issue/${issueId}` : "/session";
         const res = await http.get(endpoint, {params: {sortBy: sortBy, direction: direction}});

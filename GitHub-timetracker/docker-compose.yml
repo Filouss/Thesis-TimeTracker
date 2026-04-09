@@ -17,11 +17,12 @@ services:
     ports:
       - "8080:8080"
     environment:
+      SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/timetrackerdb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: password
-      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
-      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      DEV_GITHUB_CLIENT_ID: ${DEV_GITHUB_CLIENT_ID}
+      DEV_GITHUB_CLIENT_SECRET: ${DEV_GITHUB_CLIENT_SECRET}
     depends_on:
       - postgres
 

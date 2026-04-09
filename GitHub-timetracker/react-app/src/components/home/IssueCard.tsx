@@ -4,21 +4,9 @@ import { FaPause } from "react-icons/fa";
 import { FaPlay } from "react-icons/fa";
  import { FaRegPlayCircle } from "react-icons/fa";
 import { formatTrackedTime } from "../../lib/utils";
-
-
-type ApiIssue = {
-  id: number;
-  repository_url: string;
-  title: string;
-  state: string;
-  labels: {id:number, name: string, color: string}[];
-  timeTracked?: number;
-  html_url: string;
-  user: {id: number, login: string};
-  body: string;
-  created_at: string;
-  number: number;
-};
+import LoadingButton from "../button/LoadingButton";
+import { useState } from "react";
+import type { ApiIssue } from "../../types";
 
 type IssueCardProps = {
   issue: ApiIssue;
@@ -44,46 +32,64 @@ export function IssueCard({
   onClick
 }: IssueCardProps) {
     let trackingButton;
+    const [isLoading, setIsLoading] = useState(false);
 
     if (!isCurrent) {
         trackingButton = (
-            <button
+          <LoadingButton
+          isLoading={isLoading}
             className="tile-btn"
             id="tracking"
-            onClick={(e) =>{ 
+            onClick={async (e) =>{ 
               e.stopPropagation();
-              onStartTracking(issue.number, issue.repository_url)}}
-            >
+              setIsLoading(true);
+              try {
+                await onStartTracking(issue.number, issue.repository_url); 
+              } finally {
+                setIsLoading(false); 
+              }}}
+          >
             Track <FaPlay />
-            </button>
-        );
+          </LoadingButton>);
     } else if (isPaused) {
         trackingButton = (
-            <button
+            <LoadingButton
+            isLoading={isLoading}
             id="tracking"
             className="tile-btn"
-            onClick={(e) => {
+            onClick={async (e) => {
               e.stopPropagation();
-              onResumeTracking();
+              setIsLoading(true);
+              try {
+                await onResumeTracking();
+              } finally {
+                setIsLoading(false);
+              }
             }}
             style={{ backgroundColor: '#28a745', color: 'white', border: 'none' }}
             >
             Resume <FaRegPlayCircle />
-            </button>
+            </LoadingButton>
         );
     } else {
         trackingButton = (
-            <button
+            <LoadingButton
+            isLoading={isLoading}
             id="tracking"
             className="tile-btn"
-            onClick={(e) => {
+            onClick={async (e) => {
               e.stopPropagation();
-              onPauseTracking();
+              setIsLoading(true);
+              try {
+                await onPauseTracking();
+              } finally {
+                setIsLoading(false);
+              }
             }}
             style={{ backgroundColor: '#da7134ff', color: 'white', border: 'none' }}
             >
             Pause <FaPause />
-            </button>
+            </LoadingButton>
         );
     }
 

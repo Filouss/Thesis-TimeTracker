@@ -1,39 +1,6 @@
 import {createContext ,useCallback,useContext, useEffect, useState, type ReactNode } from "react";
 import { http } from "../lib/http";
-
-type ApiIssue = {
-  id: number;
-  repository_url: string;
-  title: string;
-  state: string;
-  labels: {id:number, name: string, color: string}[];
-  timeTracked?: number;
-  html_url: string;
-  user: {id: number, login: string};
-  body: string;
-  created_at: string;
-  number: number;
-  allSynced: boolean;
-};
-
-type ApiSession = {
-  id:number;
-  issue: {id: number, title: string, labels: {id:number, name: string, color: string}[], repoName: string, repoOwner: string, number: number};
-  timeblocks: {start: string, end: string}[];
-  paused: boolean;
-  notes: string;
-  trackedSeconds: number;
-  synced: boolean;
-}
-
-
-type HomeIssuesData = {
-  assigned: ApiIssue[];
-  pinned: ApiIssue[];
-  tracking: ApiIssue | null;
-  toSync: ApiSession[];
-  trackingPaused: boolean;
-};
+import type { HomeIssuesData } from "../types";
 
 type IssueContextType = {
     data: HomeIssuesData | null;
@@ -50,11 +17,9 @@ export function IssueProvider({ children }: { children: ReactNode }) {
     const fetchIssues = useCallback(async () => {
     setLoading(true);
     try {
-      console.log("DATA FETCH - tenhle saha na gh");
       const res = await http.get("/dashboard/home");
       setData(res.data);
     } catch (err) {
-      console.error("Failed to fetch issues", err);
     } finally {
       setLoading(false);
     }

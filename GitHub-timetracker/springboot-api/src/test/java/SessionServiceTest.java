@@ -132,7 +132,8 @@ public class SessionServiceTest {
             );
 
             when(issueService.getIssue(issueNumber, repo, owner)).thenReturn(fetchedIssue);
-            when(repositoryDAO.findByOwnerAndName(owner, repo)).thenReturn(Optional.of(testIssue.getRepository()));
+            when(issueService.getOrCreateRepository(repo, owner)).thenReturn(testIssue.getRepository());
+            when(issueService.getOrCreateLabels(fetchedIssue)).thenReturn(new HashSet<>());
             when(issueService.getOrCreateIssue(eq(issueNumber), eq(fetchedIssue), any(Repository.class), anySet()))
                     .thenReturn(testIssue);
             
@@ -304,11 +305,10 @@ public class SessionServiceTest {
             Issue issueA = new Issue(); issueA.setId(1L); issueA.setTitle("Frontend Bug");
             Issue issueB = new Issue(); issueB.setId(2L); issueB.setTitle("Backend Auth");
 
-            Session s1 = createFinishedSessionForMock(issueA, 60L); // 1 minute on A
-            Session s2 = createFinishedSessionForMock(issueB, 300L); // 5 minutes on B
-            Session s3 = createFinishedSessionForMock(issueA, 60L); // Another 1 minute on A (Total A = 120s)
+            Object[] rowB = new Object[]{issueB, 300L};
+            Object[] rowA = new Object[]{issueA, 120L};
 
-            when(sessionDAO.findByUser(testUser)).thenReturn(List.of(s1, s2, s3));
+            when(sessionDAO.getTopIssuesByTime(testUser)).thenReturn(List.of(rowB, rowA));
 
             // ACT
             List<IssueRankDTO> rankedIssues = sessionService.getRankedIssues(testUser);
@@ -331,18 +331,10 @@ public class SessionServiceTest {
             Label labelBug = new Label(); labelBug.setId(1L); labelBug.setTitle("bug");
             Label labelEnhancement = new Label(); labelEnhancement.setId(2L); labelEnhancement.setTitle("enhancement");
 
-            Issue issue1 = new Issue(); 
-            issue1.setId(1L); 
-            issue1.setLabels(Set.of(labelBug, labelEnhancement)); 
+            Object[] bugRow = new Object[]{labelBug, 150L};
+            Object[] enhancementRow = new Object[]{labelEnhancement, 100L};
 
-            Issue issue2 = new Issue(); 
-            issue2.setId(2L); 
-            issue2.setLabels(Set.of(labelBug)); 
-
-            Session s1 = createFinishedSessionForMock(issue1, 100L);
-            Session s2 = createFinishedSessionForMock(issue2, 50L);
-
-            when(sessionDAO.findByUser(testUser)).thenReturn(List.of(s1, s2));
+            when(sessionDAO.getTimeTrackedPerLabel(testUser)).thenReturn(List.of(bugRow, enhancementRow));
 
             // ACT
             List<OverviewLabelTimeDTO> labelStats = sessionService.getTimePerLabel(testUser);
@@ -617,7 +609,7 @@ public class SessionServiceTest {
             tb.setEndDate(testSession.getCreatedAt()); 
             testSession.setTimeBlocks(List.of(tb));
 
-            when(sessionDAO.findByUser(testUser)).thenReturn(List.of(testSession));
+            when(sessionDAO.findFinishedSessionsInInterval(eq(testUser), any(), any())).thenReturn(List.of(testSession));
 
             // ACT
             Float ratio = sessionService.getWorkingTimeRatio(testUser, "Today", ZoneId.of("UTC"));
@@ -631,21 +623,7 @@ public class SessionServiceTest {
             // ARRANGE
             ZoneId zone = ZoneId.of("UTC");
             Instant now = Instant.now();
-            Instant longAgo = now.minus(java.time.Duration.ofDays(100));
-
-            Session sToday = new Session();
-            sToday.setFinished(true);
-            sToday.setCreatedAt(now);
-            sToday.setTimeTracked(3600L); 
-            sToday.setTimeBlocks(List.of(new TimeBlock()));
-
-            Session sOld = new Session();
-            sOld.setFinished(true);
-            sOld.setCreatedAt(longAgo);
-            sOld.setTimeTracked(5000L);
-            sOld.setTimeBlocks(List.of(new TimeBlock()));
-
-            when(sessionDAO.findByUser(testUser)).thenReturn(List.of(sToday, sOld));
+            when(sessionDAO.sumTimeTrackedByUserAndInterval(eq(testUser), any(), any())).thenReturn(3600L);
 
             // ACT
             Long result = sessionService.secondsTrackedForInterval(testUser, "ThisWeek", zone);

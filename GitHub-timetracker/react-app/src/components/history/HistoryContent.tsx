@@ -6,6 +6,8 @@ import { useCardActions } from "../../hooks/useCardActions";
 import { EditSessionModal } from "../modals/EditSessionModal";
 import { AiOutlineDelete } from "react-icons/ai";
 import { IoArrowDownOutline, IoArrowUpOutline } from "react-icons/io5";
+import LoadingButton from "../button/LoadingButton";
+import Toast from "../modals/Toast";
 
 type TimeBlock = {
   start: string;
@@ -40,10 +42,13 @@ export default function HistoryContent({
   const [confirmMessageBody, setConfirmMessageBody] = useState("");
   const [confirmTitle, setConfirmTitle] = useState("");
   const [confirmAction, setConfirmAction] = useState<((notes?: string) => void) | null>(null);
-  const { editSession, deleteSession, syncSession } = useCardActions(onRefetch);
+  const { editSession, deleteSession, syncSession } = useCardActions(() => onRefetch(sortBy, descDirection ? "desc" : "asc"));
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [descDirection, setDescDirection] = useState(true)
   const [sortBy, setSortBy] = useState("createdAt")
+  const [syncingId, setSyncingId] = useState<number | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("Action was succesful!")
 
   async function toggleExpand(id: number) {
     setExpandedId(expandedId === id ? null : id);
@@ -53,7 +58,7 @@ export default function HistoryContent({
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentSessions = sessions.slice(startIndex, startIndex + itemsPerPage);
 
-  async function formatDate(timeblocks: { start: string, end: string }[]) {
+  function formatDate(timeblocks: { start: string, end: string }[]) {
     if (!timeblocks || timeblocks.length === 0) return "N/A";
     return new Date(timeblocks[0].start).toLocaleDateString();
   };
@@ -63,6 +68,8 @@ export default function HistoryContent({
       setEditError("");
       await editSession(sessionId, timeblocks, notes, synced, issueUrl);
       setEditingSession(null);
+      setToastMessage("Session edited succefully")
+      setShowToast(true);
     } catch (error: any) {
       if (error.response?.data?.message) {
         setEditError(error.response.data.message);
@@ -87,6 +94,11 @@ export default function HistoryContent({
 
   return (
     <div className="history-page-wrapper">
+      <Toast 
+        isVisible={showToast} 
+        message={toastMessage} 
+        onClose={() => setShowToast(false)} 
+      />
       {showConfirm && (
         <ConfirmModal
           title={confirmTitle}
@@ -189,13 +201,22 @@ export default function HistoryContent({
                 </div>
 
                 <div className="col-actions">
-                  <button disabled={session.synced}
-                    className="sync-btn" onClick={(e) => {
+                  <LoadingButton
+                      isLoading={syncingId === session.id}
+                      onClick={async(e) => {
                       e.stopPropagation();
-                      syncSession(session.id, session.notes)
-                    }}>
-                    Sync
-                  </button>
+                      setSyncingId(session.id)
+                      try{
+                        await syncSession(session.id, session.notes)
+                        setToastMessage("Session synced to GitHub");
+                        setShowToast(true)
+                      } finally {
+                        setSyncingId(null)
+                      }
+                  }}
+                  disabled={session.synced}
+                  className="sync-btn"
+                  >Sync</LoadingButton>
                   <button className="edit-btn"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -208,7 +229,11 @@ export default function HistoryContent({
                       setConfirmTitle("Are you sure you want to delete this session?");
                       setConfirmMessageBody("This change will be synchronized with GitHub automatically");
                       setShowNotes(false);
-                      setConfirmAction(() => () => deleteSession(session.id));
+                      setConfirmAction(() => () => {
+                        deleteSession(session.id)
+                        setToastMessage("Session deleted")
+                        setShowToast(true)
+                      });
                       setShowConfirm(true)
                     }}>
                     <AiOutlineDelete />
