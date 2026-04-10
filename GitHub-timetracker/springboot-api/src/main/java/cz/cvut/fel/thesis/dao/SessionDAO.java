@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import org.springframework.data.domain.Sort;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,7 @@ public interface SessionDAO extends JpaRepository<Session, Long> {
     List<Session> findByIssueAndUser(Issue issue, User user);
     List<Session> findByIssueAndUser(Issue issue, User user, Sort sort);
     List<Session> findByUserAndFinishedTrue(User user, Sort sort);
+    List<Session> findByUserAndSyncedFalseAndFinishedTrue(User user);
 
     @Query("""
     SELECT DISTINCT s FROM Session s 
@@ -59,4 +61,26 @@ List<Session> findSessionsForExport(
            "GROUP BY l " +
            "ORDER BY totalTime DESC")
     List<Object[]> getTimeTrackedPerLabel(@Param("user") User user);
+
+    @Query("""
+        SELECT i.githubId, COALESCE(SUM(s.timeTracked), 0)
+        FROM Session s
+        JOIN s.issue i
+        WHERE s.user = :user
+        AND i.githubId IN :githubIds
+        GROUP BY i.githubId
+        """)
+    List<Object[]> getTrackedSecondsByIssueGithubIds(@Param("user") User user, @Param("githubIds") Collection<Long> githubIds);
+
+    @Query("""
+        SELECT i.githubId, COUNT(s)
+        FROM Session s
+        JOIN s.issue i
+        WHERE s.user = :user
+        AND i.githubId IN :githubIds
+        AND s.finished = true
+        AND s.synced = false
+        GROUP BY i.githubId
+        """)
+    List<Object[]> countUnsyncedFinishedByIssueGithubIds(@Param("user") User user, @Param("githubIds") Collection<Long> githubIds);
 }

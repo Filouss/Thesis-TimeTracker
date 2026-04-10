@@ -50,6 +50,17 @@ export default function HistoryContent({
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("Action was succesful!")
 
+  function getErrorMessage(error: unknown): string {
+    if (typeof error === "object" && error !== null) {
+      const typedError = error as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      return typedError.response?.data?.message ?? typedError.message ?? "An error occurred while saving the session";
+    }
+    return "An error occurred while saving the session";
+  }
+
   async function toggleExpand(id: number) {
     setExpandedId(expandedId === id ? null : id);
   }
@@ -70,14 +81,8 @@ export default function HistoryContent({
       setEditingSession(null);
       setToastMessage("Session edited succefully")
       setShowToast(true);
-    } catch (error: any) {
-      if (error.response?.data?.message) {
-        setEditError(error.response.data.message);
-      } else if (error.message) {
-        setEditError(error.message);
-      } else {
-        setEditError("An error occurred while saving the session");
-      }
+    } catch (error: unknown) {
+      setEditError(getErrorMessage(error));
     }
   };
 

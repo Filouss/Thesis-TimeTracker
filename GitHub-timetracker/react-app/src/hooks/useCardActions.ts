@@ -1,5 +1,16 @@
 import { http } from "../lib/http";
 
+type EditSessionPayload = {
+    issue: {
+        repoOwner: string;
+        repoName: string;
+        issueNumber: number | null;
+    };
+    notes: string;
+    timeBlocks: { start: string; end: string }[];
+    synced: boolean;
+};
+
 export function useCardActions(refetch?: () => void) {
 
     async function startTracking(issueNumber: number, repository_url: string) {
@@ -72,7 +83,7 @@ export function useCardActions(refetch?: () => void) {
     }
 
     async function editSession(sessionId: number, timeblocks: {start: string, end: string}[], notes: string, synced: boolean, issueUrl?: string) {
-        const payload: any = {
+        const payload: EditSessionPayload = {
             issue: {repoOwner: "", repoName: "", issueNumber: null},
             notes: notes,
             timeBlocks: timeblocks,

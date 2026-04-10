@@ -48,7 +48,7 @@ public class UserController {
      *
      * @return GitHub user profile payload
      */
-    @GetMapping("/api/github/me")
+    @GetMapping("/github/me")
     public Object githubMe() {
         return github.get()
                 .uri("/user")

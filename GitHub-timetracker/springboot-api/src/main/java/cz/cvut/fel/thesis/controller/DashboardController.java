@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import cz.cvut.fel.thesis.dto.OverviewGraphsDashboardDTO;
 import cz.cvut.fel.thesis.dto.OverviewLabelTimeDTO;
@@ -27,6 +28,7 @@ import cz.cvut.fel.thesis.dto.HomeDashboardDTO;
 import cz.cvut.fel.thesis.dto.IssueRankDTO;
 import cz.cvut.fel.thesis.model.Issue;
 import cz.cvut.fel.thesis.model.User;
+import cz.cvut.fel.thesis.service.DashboardService;
 import cz.cvut.fel.thesis.service.FormatService;
 import cz.cvut.fel.thesis.service.IssueService;
 import cz.cvut.fel.thesis.service.UserService;
@@ -40,19 +42,13 @@ import cz.cvut.fel.thesis.utils.CurrentUserProvider;
 public class DashboardController {
 
     @Autowired
-    private IssueService issueService;
-
-    @Autowired
-    private UserService userService;
-    
-    @Autowired
     private CurrentUserProvider userProvider;
 
     @Autowired
     private SessionService sessionService;
 
     @Autowired
-    private FormatService formatService;
+    private DashboardService dashboardService;
 
     /**
      * Returns home dashboard data including active, pinned, and assigned issues.
@@ -64,61 +60,7 @@ public class DashboardController {
     public ResponseEntity<HomeDashboardDTO> getHomepageData(@AuthenticationPrincipal OAuth2User oAuth2User) {
         User user = userProvider.oauthToUser(oAuth2User);
 
-        List<SessionDTO> sessions = sessionService.getUnsyncedDTOs(user);
-        Long activeSessionId = user.getActiveSessionID();
-        Boolean trackingPaused;
-        try {
-            trackingPaused = sessionService.isActivePaused(user);
-        } catch (NotActiveException e) {
-            trackingPaused = false;
-        }
-        GitHubIssueDTO active = null;
-        if (activeSessionId != null) {
-            active = issueService.getIssueBySessionId(user.getActiveSessionID());
-            if (active != null) {
-                 Issue issueEntity = issueService.getByGitHubID(active.id());
-                 if (issueEntity != null) {
-                     Long timeInSeconds = issueService.getTimeTrackedForIssueInSec(issueEntity, user);
-                     boolean allSynced = sessionService.allSyncedForIssue(issueEntity, user);
-                     active = GitHubIssueDTO.withTimeTrackedAndSync(active, timeInSeconds, allSynced);
-                 }
-            }
-        }
-
-
-        List<GitHubIssueDTO> pinned  = new java.util.ArrayList<>();
-        List<GitHubIssueDTO> assigned = new java.util.ArrayList<>();
-        for (GitHubIssueDTO issue : issueService.getAssignedIssues()) {
-            Issue issueEntity = issueService.getByGitHubID(issue.id());
-            if (issueEntity != null) {
-                Long timeInSeconds = issueService.getTimeTrackedForIssueInSec(issueEntity, user);
-                boolean allSynced = sessionService.allSyncedForIssue(issueEntity, user);
-                GitHubIssueDTO issueWithTime = GitHubIssueDTO.withTimeTrackedAndSync(issue, timeInSeconds, allSynced);
-                assigned.add(issueWithTime);
-            } else {
-                assigned.add(GitHubIssueDTO.withTimeTrackedAndSync(issue, 0L, true));
-            }
-            if (userService.getPinnedIssueGitHubIds(user).contains(issue.id())) {
-                if (issueEntity != null) {
-                    Long timeInSeconds = issueService.getTimeTrackedForIssueInSec(issueEntity, user);
-                    boolean allSynced = sessionService.allSyncedForIssue(issueEntity, user);
-                    GitHubIssueDTO issueWithTime = GitHubIssueDTO.withTimeTrackedAndSync(issue, timeInSeconds, allSynced);
-                    pinned.add(issueWithTime);
-                } else{
-                    pinned.add(GitHubIssueDTO.withTimeTrackedAndSync(issue, 0L, true));
-                }
-            }
-        }
-
-        return ResponseEntity.ok(
-            new HomeDashboardDTO(
-                assigned,
-                pinned,
-                active,
-                sessions,
-                trackingPaused
-            )
-        );
+        return ResponseEntity.ok(dashboardService.getHomeDashboardData(user));
     }
 
     /**

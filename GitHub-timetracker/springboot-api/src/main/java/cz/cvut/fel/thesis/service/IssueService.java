@@ -16,9 +16,13 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Handles GitHub issue retrieval, persistence, and user issue actions.
@@ -182,6 +186,20 @@ public class IssueService {
      */
     public Issue getByGitHubID(Long githubId) {
         return issueDAO.findByGithubId(githubId).orElse(null);
+    }
+
+    /**
+     * Returns issues indexed by GitHub id for the provided ids.
+     *
+     * @param githubIds GitHub issue ids
+     * @return map of GitHub id to issue entity
+     */
+    public Map<Long, Issue> getByGitHubIDs(Collection<Long> githubIds) {
+        if (githubIds == null || githubIds.isEmpty()) {
+            return Map.of();
+        }
+        return issueDAO.findByGithubIdIn(githubIds).stream()
+                .collect(Collectors.toMap(Issue::getGithubId, Function.identity()));
     }
 
     /**

@@ -7,13 +7,27 @@ import { useCardActions } from "../hooks/useCardActions";
 export default function IssueDetailPage(
 ) {
     const {id} = useParams();
-    const {data, refetch} = useIssues();
+    const {data, loading, error, refetch} = useIssues();
     const {startTracking, openGithub, pauseTracking, resumeTracking} = useCardActions(refetch);
 
-    const issue = data?.assigned.find(i => i.id === Number(id));
+    const issueId = Number(id);
+    const hasValidIssueId = Number.isFinite(issueId);
+    const issue = hasValidIssueId ? data?.assigned.find(i => i.id === issueId) : undefined;
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Failed to load issue data: {error}</div>;
+    }
+
+    if (!hasValidIssueId) {
+        return <div>Invalid issue id.</div>;
+    }
 
     if (!issue) {
-        return <div>Loading...</div>;
+        return <div>Issue not found.</div>;
     }
 
     return (

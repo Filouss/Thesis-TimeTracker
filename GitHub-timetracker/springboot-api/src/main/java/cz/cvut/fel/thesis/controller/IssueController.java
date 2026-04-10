@@ -4,16 +4,12 @@ import cz.cvut.fel.thesis.dto.GitHubIssueDTO;
 import cz.cvut.fel.thesis.dto.IssueRequestData;
 import cz.cvut.fel.thesis.model.User;
 import cz.cvut.fel.thesis.service.IssueService;
-import cz.cvut.fel.thesis.service.UserService;
 import cz.cvut.fel.thesis.utils.CurrentUserProvider;
-import cz.cvut.fel.thesis.utils.GitHubIdConverter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 

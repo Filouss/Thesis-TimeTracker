@@ -7,11 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface IssueDAO extends JpaRepository<Issue, Long> {
     Optional<Issue> findByGithubId(Long githubID);
+    List<Issue> findByGithubIdIn(Collection<Long> githubIDs);
     List<Issue> findByTitleContainingIgnoreCase(String query);
 
     @Query("""

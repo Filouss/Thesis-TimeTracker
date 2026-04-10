@@ -433,13 +433,9 @@ public class SessionService {
      * @return unsynced session DTOs
      */
     public List<SessionDTO> getUnsyncedDTOs(User user) {
-        List<SessionDTO> toReturn = new ArrayList<>();
-        for (Session session : user.getSessions()) {
-            if (!session.isSynced() && session.isFinished()) {
-                toReturn.add(SessionDTO.fromEntity(session));
-            }
-        }
-        return toReturn;
+        return sessionDAO.findByUserAndSyncedFalseAndFinishedTrue(user).stream()
+                .map(SessionDTO::fromEntity)
+                .toList();
     }
 
     /**
@@ -474,6 +470,47 @@ public class SessionService {
             }
         }
         return true;
+    }
+
+    /**
+     * Returns tracked seconds grouped by issue GitHub id for the given user.
+     *
+     * @param user application user
+     * @param issueGithubIds issue GitHub ids
+     * @return map of issue GitHub id to tracked seconds
+     */
+    public Map<Long, Long> getTrackedSecondsByIssueGithubIds(User user, Set<Long> issueGithubIds) {
+        if (issueGithubIds == null || issueGithubIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, Long> result = new HashMap<>();
+        for (Object[] row : sessionDAO.getTrackedSecondsByIssueGithubIds(user, issueGithubIds)) {
+            Long githubId = (Long) row[0];
+            Long trackedSeconds = (Long) row[1];
+            result.put(githubId, trackedSeconds != null ? trackedSeconds : 0L);
+        }
+        return result;
+    }
+
+    /**
+     * Returns whether all finished sessions are synced, grouped by issue GitHub id.
+     *
+     * @param user application user
+     * @param issueGithubIds issue GitHub ids
+     * @return map of issue GitHub id to sync state
+     */
+    public Map<Long, Boolean> getAllSyncedByIssueGithubIds(User user, Set<Long> issueGithubIds) {
+        if (issueGithubIds == null || issueGithubIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, Boolean> result = new HashMap<>();
+        issueGithubIds.forEach(id -> result.put(id, true));
+        for (Object[] row : sessionDAO.countUnsyncedFinishedByIssueGithubIds(user, issueGithubIds)) {
+            Long githubId = (Long) row[0];
+            Long unsyncedCount = (Long) row[1];
+            result.put(githubId, unsyncedCount == null || unsyncedCount == 0L);
+        }
+        return result;
     }
 
     /**
