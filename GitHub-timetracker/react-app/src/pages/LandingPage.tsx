@@ -3,7 +3,7 @@ import GitHubLogo from "../assets/GitHub_Invertocat_Black_Clearspace.svg"
 
 export default function LandingPage() {
     function startLoginFlow() {
-        window.location.href = "http://localhost:8080/oauth2/authorization/github";
+        window.location.href = import.meta.env.VITE_APP_BASE_URL + "/oauth2/authorization/github";
     }
 
     return (
