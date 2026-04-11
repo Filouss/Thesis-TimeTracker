@@ -56,7 +56,7 @@ public class SecurityConfig {
                 }, BasicAuthenticationFilter.class)
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/error", "/webjars/**", "/actuator/health").permitAll()
+                        .requestMatchers("/", "/error", "/webjars/**", "/actuator/health", "/api/csrf").permitAll()
                         .anyRequest().authenticated()
                 )
                 .logout(logout -> logout
