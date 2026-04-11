@@ -41,7 +41,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRepository(customCsrfTokenRepository())
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
                 )
                 .addFilterAfter(new OncePerRequestFilter() {
@@ -78,6 +78,15 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+    private CookieCsrfTokenRepository customCsrfTokenRepository() {
+    CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+    repository.setCookieCustomizer(cookie -> {
+        cookie.sameSite("None"); 
+        cookie.secure(true);     
+    });
+    return repository;
+}
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
