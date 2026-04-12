@@ -64,10 +64,11 @@ public class SecurityConfig {
                 .logout(logout -> logout
                     .logoutUrl("/logout")
                     .addLogoutHandler((request, response, authentication) -> {
-                        ResponseCookie jsessionidCookie = ResponseCookie.from("SESSION", "")
+                        ResponseCookie jsessionidCookie = ResponseCookie.from("JSESSIONID", "")
                                 .maxAge(0) 
                                 .path("/")
                                 .secure(true)
+                                .httpOnly(true)
                                 .sameSite("None")
                                 .build();
                         response.addHeader(HttpHeaders.SET_COOKIE, jsessionidCookie.toString());
@@ -76,6 +77,7 @@ public class SecurityConfig {
                                 .maxAge(0)
                                 .path("/")
                                 .secure(true)
+                                .httpOnly(false)
                                 .sameSite("None")
                                 .build();
                         response.addHeader(HttpHeaders.SET_COOKIE, xsrfCookie.toString());

@@ -19,7 +19,7 @@ export default function TopBar(){
     }
 
     async function handleLogout() {
-        await http.get("/logout")
+        await http.post("/logout")
         navigate("/landing")
     }
 
