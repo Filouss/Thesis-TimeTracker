@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -61,10 +63,26 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                     .logoutUrl("/logout")
+                    .addLogoutHandler((request, response, authentication) -> {
+                        ResponseCookie jsessionidCookie = ResponseCookie.from("SESSION", "")
+                                .maxAge(0) 
+                                .path("/")
+                                .secure(true)
+                                .sameSite("None")
+                                .build();
+                        response.addHeader(HttpHeaders.SET_COOKIE, jsessionidCookie.toString());
+
+                        ResponseCookie xsrfCookie = ResponseCookie.from("XSRF-TOKEN", "")
+                                .maxAge(0)
+                                .path("/")
+                                .secure(true)
+                                .sameSite("None")
+                                .build();
+                        response.addHeader(HttpHeaders.SET_COOKIE, xsrfCookie.toString());
+                    })
                     .logoutSuccessHandler((request, response, authentication) -> {
                         response.setStatus(HttpServletResponse.SC_OK);
                     })
-                    .deleteCookies("JSESSIONID")
                     .invalidateHttpSession(true)
                     .clearAuthentication(true)
                 )
