@@ -35,7 +35,7 @@ export function SessionCard({
           
           <div className="issue-title">{issue.title}</div>
           <div className="tracked-time">
-            {`Tracked time: ` + formatTrackedTime(session.trackedSeconds)}
+            {`Session time: ` + formatTrackedTime(session.trackedSeconds)}
           </div>
         </>
       }

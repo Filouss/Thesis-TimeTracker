@@ -286,7 +286,11 @@
     border: 1px solid #444;
 }
 
-
+.left-btns {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
 
 .syncAllBtn:hover {
 

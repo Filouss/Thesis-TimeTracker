@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
 import java.util.HashSet;
@@ -156,14 +157,14 @@ public class IssueService {
     }
 
     /**
-     * Calculates total tracked time for a given issue and user.
+     * Calculates total tracked time of finished sessions for a given issue and user.
      *
      * @param issue issue entity
      * @param user application user
      * @return total tracked seconds
      */
     public Long getTimeTrackedForIssueInSec(Issue issue, User user) {
-        return sessionDAO.findByIssueAndUser(issue, user).stream()
+        return sessionDAO.findByIssueAndUserAndFinishedTrue(issue, user).stream()
                 .map(s -> s.getDuration().getSeconds())
                 .reduce(0L, Long::sum);
     }
@@ -266,6 +267,22 @@ public class IssueService {
             labels.add(labelDAO.save(label));
         }
         return labels;
+    }
+
+    /**
+     * Returns timestamp of the most recent session start
+     *
+     * @param issueEntity issue to get start time of most recent session for
+     * @param User User entity
+     * @return Instant of the most recent session start time for the given issue and user, or {@code null} if no sessions exist
+     */
+    public Instant getActiveSessionStartTimeForIssue(Issue issueEntity, User user) {
+        List<Session> sessions = sessionDAO.findByIssueAndUserOrderByCreatedAtDesc(issueEntity, user);
+        if (sessions.isEmpty()) {
+            return null;
+        }
+        
+        return sessions.get(0).getCreatedAt();
     }
 
 

@@ -14,7 +14,8 @@ export default function ByLabelGraph({data} : Data) {
         <div className="by-label-graph-wrapper">
             <h3>Most time tracked for issue labels</h3>
             <div className="widget">
-                <ResponsiveContainer width="100%" height={300} className={"labelData"}>
+                {data?.length ? (
+                    <ResponsiveContainer width="100%" height={300} className={"labelData"}>
                     <BarChart data={chartData}>
                     <XAxis dataKey="name" stroke="rgb(247, 247, 247)"/>
                     <YAxis stroke="rgb(247, 247, 247)" tickFormatter={formatTrackedTime} />
@@ -28,6 +29,9 @@ export default function ByLabelGraph({data} : Data) {
                     <Bar dataKey="secondsTracked" />
                     </BarChart>
                 </ResponsiveContainer>
+                ) : (
+                    <p className="no-data">No time tracked for any labels yet</p>
+                )}
             </div>
         </div>
     );

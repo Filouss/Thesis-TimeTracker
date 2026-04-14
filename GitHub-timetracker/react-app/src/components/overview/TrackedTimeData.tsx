@@ -38,7 +38,7 @@ export default function TrackedTimeData({ statData, onIntervalChange }: trackedD
             </div>
             <div className="work-ratio-wrapper">
                 <div className="data-title">Time working ratio during session beginning and end</div>
-                <div>{statData?.workingTimeRatio}</div>
+                <div>{statData?.workingTimeRatio || "No data available"}</div>
             </div>
         </div>
     )

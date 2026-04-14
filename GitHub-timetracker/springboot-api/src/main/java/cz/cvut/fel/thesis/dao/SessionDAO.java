@@ -18,9 +18,11 @@ public interface SessionDAO extends JpaRepository<Session, Long> {
     List<Session> findByUser(User user, Sort sort);
     Optional<Session> findByIdAndUser(Long id, User user);
     List<Session> findByIssueAndUser(Issue issue, User user);
+    List<Session> findByIssueAndUserAndFinishedTrue(Issue issue, User user);
     List<Session> findByIssueAndUser(Issue issue, User user, Sort sort);
     List<Session> findByUserAndFinishedTrue(User user, Sort sort);
     List<Session> findByUserAndSyncedFalseAndFinishedTrue(User user);
+    List<Session> findByIssueAndUserOrderByCreatedAtDesc(Issue issue, User user);
 
     @Query("""
     SELECT DISTINCT s FROM Session s 
@@ -68,6 +70,7 @@ List<Session> findSessionsForExport(
         JOIN s.issue i
         WHERE s.user = :user
         AND i.githubId IN :githubIds
+        AND s.finished = true
         GROUP BY i.githubId
         """)
     List<Object[]> getTrackedSecondsByIssueGithubIds(@Param("user") User user, @Param("githubIds") Collection<Long> githubIds);

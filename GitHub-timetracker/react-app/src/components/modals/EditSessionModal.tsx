@@ -134,7 +134,6 @@ export function EditSessionModal({ session, onSave, onCancel, error }: EditSessi
         <h3>Edit Session</h3>
 
         <div className="issue-section">
-            {/* TODO: Fix url reponame */}
           <h4>GitHub Issue</h4>
           <input
             type="url"

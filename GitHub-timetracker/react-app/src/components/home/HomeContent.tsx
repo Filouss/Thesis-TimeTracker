@@ -10,14 +10,18 @@ import LoadingButton from "../button/LoadingButton";
 import Toast from "../modals/Toast";
 import type { ApiSession } from "../../types";
 import "../../styles/modals.css"
+import { ActiveTimer } from "./ActiveTimer";
 
 export default function HomeContent() {
     const navigate = useNavigate();
     const {data, loading, refetch} = useIssues();
 
+
     useEffect(() => {
         refetch();
     }, [refetch]);
+
+
     const {startTracking, syncSession, openGithub, Pin, unPin, editSession, pauseTracking, resumeTracking, endTracking} = useCardActions(refetch);
     const [showConfirm, setShowConfirm] = useState(false);
     const [editingSession, setEditingSession] = useState<ApiSession | null>(null);
@@ -219,7 +223,8 @@ export default function HomeContent() {
                         </div>
                     </div>
                 <div className="homepage-btns">
-                    <button onClick={() => {
+                    <div className="left-btns">
+                        <button onClick={() => {
                         setConfirmTitle("Are you sure you want to end the session?");
                         setConfirmMessageBody("You can now add any session notes and this session will be added to the Ready to sync section.");
                         setShowNotes(true);
@@ -228,10 +233,17 @@ export default function HomeContent() {
                         });
                         setShowConfirm(true)
                         }                    
-                    }
-                    disabled={!data.tracking}
-                    className="endSessionBtn"
-                    >End session</button>
+                        }
+                        disabled={!data.tracking}
+                        className="endSessionBtn"
+                        >End session</button>
+                        <div>
+                            {data.tracking ? (
+                                <ActiveTimer startTime={data.currStartTime ? data.currStartTime : new Date()} ></ActiveTimer>
+                            )
+                             : <p></p>}
+                        </div>
+                    </div>
                     <LoadingButton
                         isLoading={isSyncingAll}
                         onClick={() => {

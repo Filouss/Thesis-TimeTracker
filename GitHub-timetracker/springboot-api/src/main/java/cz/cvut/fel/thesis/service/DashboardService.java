@@ -1,6 +1,7 @@
 package cz.cvut.fel.thesis.service;
 
 import java.io.NotActiveException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +37,7 @@ public class DashboardService {
         List<SessionDTO> toSync = sessionService.getUnsyncedDTOs(user);
         Long activeSessionId = user.getActiveSessionID();
         Set<Long> pinnedIssueIds = userService.getPinnedIssueGitHubIds(user);
+        Instant currStartTime = null;
 
         //check if active session is paused
         Boolean trackingPaused;
@@ -55,6 +57,7 @@ public class DashboardService {
                      Long timeInSeconds = issueService.getTimeTrackedForIssueInSec(issueEntity, user);
                      boolean allSynced = sessionService.allSyncedForIssue(issueEntity, user);
                      active = GitHubIssueDTO.withTimeTrackedAndSync(active, timeInSeconds, allSynced);
+                     currStartTime = issueService.getActiveSessionStartTimeForIssue(issueEntity, user);
                  }
             }
         }
@@ -94,7 +97,8 @@ public class DashboardService {
             pinned,
             active,
             toSync,
-            trackingPaused
+            trackingPaused,
+            currStartTime
         );
         
     }

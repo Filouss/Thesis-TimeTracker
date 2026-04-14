@@ -4,14 +4,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import cz.cvut.fel.thesis.dto.CommentDTO;
 import cz.cvut.fel.thesis.dto.GitHubIssueDTO;
+import cz.cvut.fel.thesis.exceptions.UnassignedIssueException;
 import cz.cvut.fel.thesis.model.Issue;
 import cz.cvut.fel.thesis.model.Session;
+import reactor.core.publisher.Mono;
 
 /**
  * Encapsulates GitHub REST API operations used by the application.
@@ -58,10 +62,9 @@ public class GitHubAPIClient {
                                 .path("/repos/{owner}/{repo}/issues/{issueNumber}")
                                 .build(owner, repo, issueNumber))
                         .retrieve()
-                        .onStatus(HttpStatusCode::isError,
-                                        resp -> resp.bodyToMono(String.class).map(body -> new RuntimeException(
-                                                "GitHub " + resp.statusCode() + " body: " + body)))
                         .bodyToMono(GitHubIssueDTO.class)
+                        .onErrorMap(WebClientResponseException.NotFound.class, 
+                                e -> new UnassignedIssueException(HttpStatus.NOT_FOUND, "Issue not found in GitHub"))
                         .block();
         }
 

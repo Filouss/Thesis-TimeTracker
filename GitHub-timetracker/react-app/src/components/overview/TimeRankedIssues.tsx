@@ -11,12 +11,14 @@ export default function TimeRankedIssues({ data }: Data) {
         ...item,
         fill: COLORS[index % COLORS.length]
     }));
+    console.log(data);
     return (
         <div className="ranked-wrapper">
             <h3 className="ranked-title">
                 Most time consuming issues
             </h3>
-            <div className="ranked-content">
+            {data?.length ? (
+                <div className="ranked-content">
                 <div className="ranked-list">
                     {chartData?.map((element, idx) => (
                         <div key={element.number} className="ranked-item">
@@ -57,6 +59,9 @@ export default function TimeRankedIssues({ data }: Data) {
                     </ResponsiveContainer>
                 </div>
             </div>
+            ) : (
+                <p>No data yet.</p>
+            )}
         </div>
     )
 }

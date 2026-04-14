@@ -117,7 +117,7 @@ export function IssueCard({
         <div className="issue-title">{issue.title}</div>
         <div className="mid-row-right">
           <div className="tracked-time">
-            {`Tracked time: ` + formatTrackedTime(issue.timeTracked ?? 0)}          
+            {`Tracked time: ` + ((issue.timeTracked && issue.timeTracked != 0) ? formatTrackedTime(issue.timeTracked) : "0m")}     
           </div>
           </div>
         
