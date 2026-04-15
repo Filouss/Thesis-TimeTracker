@@ -193,7 +193,7 @@ export default function HomeContent() {
                                     </div>
                                 </div>
                                 <div className="homeCard-list">
-                                    {data.toSync ? (
+                                    {data.toSync.length > 0 ? (
                                         [...data.toSync]
                                         .sort((a, b) => {
                                             const timeA = new Date(a.timeblocks[0]?.start || 0).getTime();
