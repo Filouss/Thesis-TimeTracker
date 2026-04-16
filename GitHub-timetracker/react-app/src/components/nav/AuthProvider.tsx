@@ -26,8 +26,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(res.data);
         setLoading(false);
       })
-      .catch(() => {
-        setUser(null);
+      .catch((error: any) => {
+        if(error.response && error.response.status === 401) {
+          setUser(null);
+        } else {
+          console.error("Failed to fetch user data:", error);
+        }
+      }).finally(() => {
         setLoading(false);
       });
   }, []);
