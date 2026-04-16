@@ -150,7 +150,7 @@ public class DashboardServiceTest {
                 null,
                 null,
                 null,
-                assignee,
+                List.of(assignee),
                 null,
                 List.of(),
                 "https://api.github.com/repos/owner/repo",

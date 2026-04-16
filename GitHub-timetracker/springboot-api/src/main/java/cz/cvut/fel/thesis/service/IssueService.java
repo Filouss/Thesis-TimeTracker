@@ -85,7 +85,7 @@ public class IssueService {
      */
     public GitHubIssueDTO pinIssue(int issueNumber, String repo, String owner, User user) {
         GitHubIssueDTO issueDTO = getIssue(issueNumber, repo, owner);
-        if (issueDTO.assignee() == null || !issueDTO.assignee().login().equals(user.getUsername())) {
+        if (issueDTO.assignees() == null || issueDTO.assignees().stream().noneMatch(assignee -> assignee.login().equals(user.getUsername()))) {
             throw new UnassignedIssueException(HttpStatus.BAD_REQUEST, "Can't pin unassigned issue");
         }
         user.getPinnedIssueGithubIds().add(issueDTO.id());
@@ -104,7 +104,7 @@ public class IssueService {
      */
     public GitHubIssueDTO unpinIssue(int issueNumber, String repo, String owner, User user) {
         GitHubIssueDTO issueDTO = getIssue(issueNumber, repo, owner);
-        if (issueDTO.assignee() == null || !issueDTO.assignee().login().equals(user.getUsername())) {
+        if (issueDTO.assignees() == null || issueDTO.assignees().stream().noneMatch(assignee -> assignee.login().equals(user.getUsername()))) {
             throw new UnassignedIssueException(HttpStatus.BAD_REQUEST, "Can't unpin unassigned issue");
         }
         user.getPinnedIssueGithubIds().remove(issueDTO.id());

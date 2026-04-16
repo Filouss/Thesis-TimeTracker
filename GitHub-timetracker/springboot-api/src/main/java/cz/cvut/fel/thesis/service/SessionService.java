@@ -72,8 +72,8 @@ public class SessionService {
         }
 
         GitHubIssueDTO fetchedIssue = issueService.getIssue(issueNumber, repo, owner);
-        if (fetchedIssue.assignee() == null ||
-                !fetchedIssue.assignee().login().equals(user.getUsername())) {
+        if (fetchedIssue.assignees() == null ||
+                fetchedIssue.assignees().stream().noneMatch(assignee -> assignee.login().equals(user.getUsername()))) {
 
             throw new UnassignedIssueException(HttpStatus.BAD_REQUEST, "Can't start a session for an unassigned issue");
         }
@@ -232,7 +232,7 @@ public class SessionService {
         GitHubIssueDTO fetchedIssue = issueService.getIssue(updateIssue.issueNumber(), updateIssue.repoName(),
                 updateIssue.repoOwner());
         if (fetchedIssue != null) {
-            if (fetchedIssue.assignee() == null || !fetchedIssue.assignee().login().equals(user.getUsername())) {
+            if (fetchedIssue.assignees() == null || fetchedIssue.assignees().stream().noneMatch(assignee -> assignee.login().equals(user.getUsername()))) {
                 throw new UnassignedIssueException(HttpStatus.BAD_REQUEST,
                         "Can't create a session for an unassigned issue");
             }

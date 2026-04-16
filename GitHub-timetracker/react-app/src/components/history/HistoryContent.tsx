@@ -7,7 +7,7 @@ import { EditSessionModal } from "../modals/EditSessionModal";
 import { AiOutlineDelete } from "react-icons/ai";
 import { IoArrowDownOutline, IoArrowUpOutline } from "react-icons/io5";
 import LoadingButton from "../button/LoadingButton";
-import Toast from "../modals/Toast";
+import { useToast } from "../../context/ToastContext";
 
 type TimeBlock = {
   start: string;
@@ -47,8 +47,7 @@ export default function HistoryContent({
   const [descDirection, setDescDirection] = useState(true)
   const [sortBy, setSortBy] = useState("createdAt")
   const [syncingId, setSyncingId] = useState<number | null>(null);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("Action was succesful!")
+  const { showToast } = useToast();
 
   function getErrorMessage(error: unknown): string {
     if (typeof error === "object" && error !== null) {
@@ -79,8 +78,7 @@ export default function HistoryContent({
       setEditError("");
       await editSession(sessionId, timeblocks, notes, synced, issueUrl);
       setEditingSession(null);
-      setToastMessage("Session edited succefully")
-      setShowToast(true);
+      showToast("Session updated successfully", "success");
     } catch (error: unknown) {
       setEditError(getErrorMessage(error));
     }
@@ -99,11 +97,6 @@ export default function HistoryContent({
 
   return (
     <div className="history-page-wrapper">
-      <Toast 
-        isVisible={showToast} 
-        message={toastMessage} 
-        onClose={() => setShowToast(false)} 
-      />
       {showConfirm && (
         <ConfirmModal
           title={confirmTitle}
@@ -213,8 +206,7 @@ export default function HistoryContent({
                       setSyncingId(session.id)
                       try{
                         await syncSession(session.id, session.notes)
-                        setToastMessage("Session synced to GitHub");
-                        setShowToast(true)
+                        showToast("Session synchronized successfully", "success");
                       } finally {
                         setSyncingId(null)
                       }
@@ -236,8 +228,7 @@ export default function HistoryContent({
                       setShowNotes(false);
                       setConfirmAction(() => () => {
                         deleteSession(session.id)
-                        setToastMessage("Session deleted")
-                        setShowToast(true)
+                        showToast("Session deleted", "success");
                       });
                       setShowConfirm(true)
                     }}>

@@ -171,7 +171,7 @@ public class IssueServiceTest {
             Session s2 = mock(Session.class);
             when(s2.getDuration()).thenReturn(Duration.ofSeconds(250));
 
-            when(sessionDAO.findByIssueAndUser(issue, testUser)).thenReturn(List.of(s1, s2));
+            when(sessionDAO.findByIssueAndUserAndFinishedTrue(issue, testUser)).thenReturn(List.of(s1, s2));
 
             // ACT
             Long totalSeconds = issueService.getTimeTrackedForIssueInSec(issue, testUser);
@@ -249,7 +249,7 @@ public class IssueServiceTest {
                 "open",
                 "Mock Body",
                 null, null, null,
-                assignee,
+                assignee == null ? null : List.of(assignee),
                 null,
                 List.of(),
                 null, null, null, false

@@ -7,10 +7,10 @@ import { ConfirmModal } from "../modals/ConfirmModal";
 import { EditSessionModal } from "../modals/EditSessionModal";
 import { useIssues } from "../../context/IssueContext";
 import LoadingButton from "../button/LoadingButton";
-import Toast from "../modals/Toast";
 import type { ApiSession } from "../../types";
 import "../../styles/modals.css"
 import { ActiveTimer } from "./ActiveTimer";
+import { useToast } from "../../context/ToastContext";
 
 export default function HomeContent() {
     const navigate = useNavigate();
@@ -31,8 +31,7 @@ export default function HomeContent() {
     const [confirmTitle, setConfirmTitle] = useState("");
     const [confirmAction, setConfirmAction] = useState<((notes?: string) => void) | null>(null);
     const [isSyncingAll, setIsSyncingAll] = useState(false);
-    const [showToast, setShowToast] = useState(false);
-    const [toastMessage, setToastMessage] = useState("Action was succesful!")
+    const { showToast } = useToast();
 
     function getErrorMessage(error: unknown): string {
         if (typeof error === "object" && error !== null) {
@@ -50,8 +49,7 @@ export default function HomeContent() {
             setEditError("");
             await editSession(sessionId, timeblocks, notes, synced, issueUrl);
             setEditingSession(null);
-            setToastMessage("Session edited succefully")
-            setShowToast(true);
+            showToast("Session updated successfully", "success");
         } catch (error: unknown) {
             setEditError(getErrorMessage(error));
         }
@@ -84,11 +82,6 @@ export default function HomeContent() {
 
     return (
         <div className="homepage-content">
-                    <Toast 
-                        isVisible={showToast} 
-                        message={toastMessage} 
-                        onClose={() => setShowToast(false)} 
-                    />
                     {showConfirm && (
                         <ConfirmModal
                             title={confirmTitle}
@@ -206,8 +199,7 @@ export default function HomeContent() {
                                             session={session}
                                             onSync={async (sessionId, notes) => {
                                                 await syncSession(sessionId, notes);
-                                                setToastMessage("Session synced successfully!");
-                                                setShowToast(true);
+                                                showToast("Session synchronized successfully", "success");
                                             }}
                                             onEdit={(sessionId) => {
                                                 const sessionToEdit = data.toSync.find(s => s.id === sessionId);
@@ -249,12 +241,11 @@ export default function HomeContent() {
                         onClick={() => {
                         setConfirmTitle("Are you sure you want to sync all sessions to GitHub?");
                         setConfirmMessageBody("This will update the linked issues with the tracked time and notes.");
-                        setToastMessage("All sessions synced succesfully");
                         setShowNotes(false);
                         setConfirmAction(() => () => {
                             setIsSyncingAll(true);
                             syncAll();
-                            setShowToast(true)
+                            showToast("All sessions synchronized successfully", "success");
                         });
                         setShowConfirm(true);
                         

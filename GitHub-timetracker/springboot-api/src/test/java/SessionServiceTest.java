@@ -126,7 +126,7 @@ public class SessionServiceTest {
             GitHubIssueDTO fetchedIssue = new GitHubIssueDTO(
                     1L, issueNumber, "Title", "open", "Body", 
                     "https://github.com/testOwner/testRepo/issues/42", 
-                    OffsetDateTime.now(), OffsetDateTime.now(), assignee, "issueUrl", 
+                    OffsetDateTime.now(), OffsetDateTime.now(), List.of(assignee), "issueUrl", 
                     List.of(), "https://api.github.com/repos/" + owner + "/" + repo, 
                     0L, assignee, false
             );
@@ -158,7 +158,7 @@ public class SessionServiceTest {
             GitHubIssueDTO unassignedIssue = new GitHubIssueDTO(
                     1L, 42, "Title", "open", "Body", 
                     "https://github.com/testOwner/testRepo/issues/42", 
-                    OffsetDateTime.now(), OffsetDateTime.now(), wrongAssignee, "issueUrl", 
+                    OffsetDateTime.now(), OffsetDateTime.now(), List.of(wrongAssignee), "issueUrl", 
                     List.of(), "https://api.github.com/repos/testOwner/testRepo", 
                     0L, wrongAssignee, false
             );
@@ -398,7 +398,7 @@ public class SessionServiceTest {
             GitHubIssueDTO fetchedIssue = new GitHubIssueDTO(
                     999L, 42, "Title", "open", "Body", 
                     "https://github.com/testOwner/testRepo/issues/42", 
-                    OffsetDateTime.now(), OffsetDateTime.now(), assignee, "issueUrl", 
+                    OffsetDateTime.now(), OffsetDateTime.now(), List.of(assignee), "issueUrl", 
                     List.of(), "https://api.github.com/repos/testOwner/testRepo", 
                     0L, assignee, false
             );
@@ -453,7 +453,7 @@ public class SessionServiceTest {
             GitHubIssueDTO fetchedIssue = new GitHubIssueDTO(
                     999L, 42, "Title", "open", "Body", 
                     "https://github.com/testOwner/testRepo/issues/42", 
-                    OffsetDateTime.now(), OffsetDateTime.now(), assignee, "issueUrl", 
+                    OffsetDateTime.now(), OffsetDateTime.now(), List.of(assignee), "issueUrl", 
                     List.of(), "https://api.github.com/repos/testOwner/testRepo", 
                     0L, assignee, false
             );
@@ -568,6 +568,7 @@ public class SessionServiceTest {
             // Create a local user to make sure we have a clean collection
             User localUser = new User();
             localUser.setSessions(new ArrayList<>(List.of(s1, s2, s3)));
+            when(sessionDAO.findByUserAndSyncedFalseAndFinishedTrue(localUser)).thenReturn(List.of(s3));
 
             // ACT
             List<SessionDTO> result = sessionService.getUnsyncedDTOs(localUser);
