@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.io.NotActiveException;
 import java.time.LocalDateTime;
@@ -32,6 +33,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleUserNotFound(UserNotFoundException ex){
         log.warn("User not found: {}", ex.getMessage());
         return buildResponse(HttpStatus.NOT_FOUND, "User not found", ex.getMessage());
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Void> handleNoResourceFound(NoResourceFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     @ExceptionHandler

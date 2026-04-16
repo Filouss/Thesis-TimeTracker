@@ -70,6 +70,16 @@ public class FormatService {
     }
 
     public String formatDuration(Duration duration) {
-        return String.format("%02dh:%02dm", duration.toHours(), duration.toMinutesPart());
+        long totalSeconds = duration.getSeconds();
+        long totalMinutes = Math.round(totalSeconds / 60.0);
+        
+        if (totalSeconds == 0) return "0m";
+        if (totalSeconds > 0 && totalMinutes == 0) return "<1m";
+
+        long hours = totalMinutes / 60;
+        long minutes = totalMinutes % 60;
+
+        if (hours == 0) return minutes + "m";
+        return hours + "h " + minutes + "m";
     }
 }

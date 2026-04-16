@@ -94,7 +94,7 @@ export function EditSessionModal({ session, onSave, onCancel, error }: EditSessi
     // Adjust for the local timezone offset to trick toISOString into printing local time
     const offset = date.getTimezoneOffset() * 60000;
     const localDate = new Date(date.getTime() - offset);
-    return localDate.toISOString().slice(0, 16);
+    return localDate.toISOString().slice(0, 19);
   }
 
   const handleUrlChange = (url: string) => {
@@ -160,6 +160,7 @@ export function EditSessionModal({ session, onSave, onCancel, error }: EditSessi
                 <div className="timeblock-inputs">
                   <input
                     type="datetime-local"
+                    step={1}
                     value={block.start}
                     className={isInvalid ? 'invalid-input' : ''}
                     onChange={(e) => updateTimeblock(index, 'start', e.target.value)}
@@ -167,6 +168,7 @@ export function EditSessionModal({ session, onSave, onCancel, error }: EditSessi
                   <span>to</span>
                   <input
                     type="datetime-local"
+                    step={1}
                     value={block.end || ""}
                     className={isInvalid ? 'invalid-input' : ''}
                     onChange={(e) => updateTimeblock(index, 'end', e.target.value)}

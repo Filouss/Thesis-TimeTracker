@@ -77,6 +77,12 @@
   margin-bottom: 10px;
 }
 
+.timeblock-inputs{
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 .button-spacer {
   width: 100px;
   display: flex;
