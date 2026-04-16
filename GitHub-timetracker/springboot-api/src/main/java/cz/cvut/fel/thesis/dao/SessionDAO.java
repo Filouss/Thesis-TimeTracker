@@ -19,6 +19,7 @@ public interface SessionDAO extends JpaRepository<Session, Long> {
     Optional<Session> findByIdAndUser(Long id, User user);
     List<Session> findByIssueAndUser(Issue issue, User user);
     List<Session> findByIssueAndUserAndFinishedTrue(Issue issue, User user);
+    Optional<Session> findByUserAndFinishedFalse(User user);
     List<Session> findByIssueAndUser(Issue issue, User user, Sort sort);
     List<Session> findByUserAndFinishedTrue(User user, Sort sort);
     List<Session> findByUserAndSyncedFalseAndFinishedTrue(User user);

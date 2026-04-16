@@ -9,6 +9,7 @@ public record HomeDashboardDTO(
     GitHubIssueDTO tracking,
     List<SessionDTO> toSync,
     Boolean trackingPaused,
-    Instant currStartTime
+    Instant currLatestTBStartTime,
+    Long currFinishedTBDuration
 ) {    
 }

@@ -41,5 +41,6 @@ export type HomeIssuesData = {
   tracking: ApiIssue | null;
   toSync: ApiSession[];
   trackingPaused: boolean;
-  currStartTime: string | Date;
+  currLatestTBStartTime: string | Date;
+  currFinishedTBDuration: number | null;
 };

@@ -79,7 +79,7 @@ export function SessionCard({
           </div>
           <div className="card-btns">
             <button className="tile-btn" onClick={() => onEdit?.(session.id)}>
-            Edit
+            View & Edit
           </button>
 
           <LoadingButton 

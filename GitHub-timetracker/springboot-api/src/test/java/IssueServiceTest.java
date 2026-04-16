@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -237,6 +238,31 @@ public class IssueServiceTest {
             List<String> result = issueService.getIssueNamesForQuery("Iss", testUser);
 
             assertEquals(expected, result);
+        }
+
+        @Test
+        void getActiveSessionLatestTBStartTimeForIssue_ReturnsCurrentUnfinishedSessionBlockStart() {
+            Issue issue = new Issue();
+            Session activeSession = new Session();
+            TimeBlock timeBlock = new TimeBlock();
+            Instant start = Instant.now().minusSeconds(90);
+            timeBlock.setStartDate(start);
+            activeSession.setTimeBlocks(new ArrayList<>(List.of(timeBlock)));
+
+            when(sessionDAO.findByUserAndFinishedFalse(testUser)).thenReturn(Optional.of(activeSession));
+
+            assertEquals(start, issueService.getActiveSessionLatestTBStartTimeForIssue(issue, testUser));
+        }
+
+        @Test
+        void getActiveSessionFinishedTBDurationForIssue_ReturnsCurrentUnfinishedSessionDuration() {
+            Issue issue = new Issue();
+            Session activeSession = new Session();
+            activeSession.setTimeTracked(120L);
+
+            when(sessionDAO.findByUserAndFinishedFalse(testUser)).thenReturn(Optional.of(activeSession));
+
+            assertEquals(120L, issueService.getActiveSessionFinishedTBDurationForIssue(issue, testUser));
         }
     }
 

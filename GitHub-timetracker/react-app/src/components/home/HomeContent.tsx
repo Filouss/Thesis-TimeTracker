@@ -231,7 +231,7 @@ export default function HomeContent() {
                         >End session</button>
                         <div>
                             {data.tracking ? (
-                                <ActiveTimer startTime={data.currStartTime ? data.currStartTime : new Date()} ></ActiveTimer>
+                                <ActiveTimer isActive={!data.trackingPaused} accumulatedSeconds={data.currFinishedTBDuration} currentTrackStartTime={data.currLatestTBStartTime}  ></ActiveTimer>
                             )
                              : <p></p>}
                         </div>

@@ -270,19 +270,22 @@ public class IssueService {
     }
 
     /**
-     * Returns timestamp of the most recent session start
+     * Returns timestamp of active session latest time block start
      *
-     * @param issueEntity issue to get start time of most recent session for
      * @param User User entity
-     * @return Instant of the most recent session start time for the given issue and user, or {@code null} if no sessions exist
+     * @return Instant of the most time block start time for the active session and user, or {@code null} if no session exist
      */
-    public Instant getActiveSessionStartTimeForIssue(Issue issueEntity, User user) {
-        List<Session> sessions = sessionDAO.findByIssueAndUserOrderByCreatedAtDesc(issueEntity, user);
-        if (sessions.isEmpty()) {
-            return null;
-        }
-        
-        return sessions.get(0).getCreatedAt();
+    public Instant getActiveSessionLatestTBStartTimeForIssue(Issue issueEntity, User user) {
+        return sessionDAO.findByUserAndFinishedFalse(user)
+                .map(Session::getMostRecentTimeBlock)
+                .map(TimeBlock::getStartDate)
+                .orElse(null);
+    }
+
+    public Long getActiveSessionFinishedTBDurationForIssue(Issue issueEntity, User user) {
+        return sessionDAO.findByUserAndFinishedFalse(user)
+                .map(session -> session.getDuration().getSeconds())
+                .orElse(null);
     }
 
 

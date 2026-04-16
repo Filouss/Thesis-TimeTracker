@@ -52,10 +52,9 @@ public class Session {
         if (timeBlocks == null || timeBlocks.isEmpty()) return Duration.ZERO;
 
         return timeBlocks.stream()
-                .filter(tb -> tb.getStartDate() != null)
+                .filter(tb -> tb.getStartDate() != null && tb.getEndDate() != null)
                 .map(tb -> {
-                    Instant endDate = tb.getEndDate() != null ? tb.getEndDate() : Instant.now();
-                    return Duration.between(tb.getStartDate(), endDate);
+                    return Duration.between(tb.getStartDate(), tb.getEndDate());
                 })
                 .reduce(Duration.ZERO, Duration::plus);
     }

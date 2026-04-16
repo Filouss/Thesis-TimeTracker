@@ -37,7 +37,9 @@ public class DashboardService {
         List<SessionDTO> toSync = sessionService.getUnsyncedDTOs(user);
         Long activeSessionId = user.getActiveSessionID();
         Set<Long> pinnedIssueIds = userService.getPinnedIssueGitHubIds(user);
-        Instant currStartTime = null;
+        Instant currLatestTBStartTime = null;
+        Long currFinishedTBDuration = null;
+
 
         //check if active session is paused
         Boolean trackingPaused;
@@ -57,7 +59,8 @@ public class DashboardService {
                      Long timeInSeconds = issueService.getTimeTrackedForIssueInSec(issueEntity, user);
                      boolean allSynced = sessionService.allSyncedForIssue(issueEntity, user);
                      active = GitHubIssueDTO.withTimeTrackedAndSync(active, timeInSeconds, allSynced);
-                     currStartTime = issueService.getActiveSessionStartTimeForIssue(issueEntity, user);
+                     currLatestTBStartTime = issueService.getActiveSessionLatestTBStartTimeForIssue(issueEntity, user);
+                     currFinishedTBDuration = issueService.getActiveSessionFinishedTBDurationForIssue(issueEntity, user);
                  }
             }
         }
@@ -98,7 +101,8 @@ public class DashboardService {
             active,
             toSync,
             trackingPaused,
-            currStartTime
+            currLatestTBStartTime,
+            currFinishedTBDuration
         );
         
     }

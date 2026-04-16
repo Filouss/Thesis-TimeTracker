@@ -2,36 +2,46 @@ import { useEffect, useState } from "react";
 import { formatTrackedTime } from "../../lib/utils";
 
 interface ActiveTimerProps {
-    startTime: string | Date;
+    isActive: boolean;
+    accumulatedSeconds: number | null; 
+    currentTrackStartTime: string | Date | null; //resume or start time tracking
 }
 
-export const ActiveTimer = ({ startTime }: ActiveTimerProps) => {
-    const [elapsedTime, setElapsedTime] = useState<number>(0);
+export const ActiveTimer = ({ isActive, accumulatedSeconds, currentTrackStartTime }: ActiveTimerProps) => {
+    const [displayTime, setDisplayTime] = useState<string>(
+        formatTrackedTime(accumulatedSeconds || 0)
+    );
 
     useEffect(() => {
-        if (!startTime) return;
-        console.log(startTime);
+        if (!isActive || !currentTrackStartTime) {
+            setDisplayTime(formatTrackedTime(accumulatedSeconds || 0));
+            return;
+        }
 
-        const startTimestamp = new Date(startTime).getTime();
+        const startTimestamp = new Date(currentTrackStartTime).getTime();
 
         const updateTimer = () => {
             const now = Date.now();
-            setElapsedTime(now - startTimestamp);
+            
+            const currentTrackedMs = Math.max(0, now - startTimestamp); 
+            
+            // Total Time = Past recorded time + Current live tracked time
+            const totalSeconds = (accumulatedSeconds || 0) + Math.floor(currentTrackedMs / 1000);
+            
+            setDisplayTime(formatTrackedTime(totalSeconds));
         };
-        
+
         updateTimer();
 
-        
-        const updateInterval = setInterval(updateTimer, 1000);
+        // Start the visual ticker
+        const intervalId = setInterval(updateTimer, 1000);
 
-        //interval cleanup on component unmount
-        return () => clearInterval(updateInterval);
-        
-    }, [startTime]);
+        return () => clearInterval(intervalId);
+    }, [isActive, accumulatedSeconds, currentTrackStartTime]);
 
     return (
         <div className="text-xl font-mono font-bold">
-            Current session time: {formatTrackedTime(elapsedTime/1000)}
+            Current session time: {displayTime}
         </div>
     );
 };

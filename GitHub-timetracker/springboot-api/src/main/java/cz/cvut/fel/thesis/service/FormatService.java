@@ -61,7 +61,7 @@ public class FormatService {
                 .append(toSync.getMostRecentTimeBlock().getStartDate().atZone(userZoneId).toLocalDate())
                 .append(" — Duration: ")
                 .append(formatDuration(duration));
-        if (notes != null) {
+        if (notes != null && !notes.isBlank()) {
             sb.append(" — ").append(notes);
         }
         sb.append("\n");
