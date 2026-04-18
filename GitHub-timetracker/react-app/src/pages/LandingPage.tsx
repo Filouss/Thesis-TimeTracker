@@ -1,5 +1,9 @@
 import "../styles/landing.css"
 import GitHubLogo from "../assets/GitHub_Invertocat_Black_Clearspace.svg"
+import { IoIosCog } from "react-icons/io";
+import { BsGraphUp } from "react-icons/bs";
+import { RiFilePaper2Fill } from "react-icons/ri";
+
 
 export default function LandingPage() {
     function startLoginFlow() {
@@ -21,17 +25,17 @@ export default function LandingPage() {
 
             <section className="features-grid">
                 <div className="glass-card">
-                    <div className="icon-circle">⚙️</div>
+                    <div className="icon-circle"><IoIosCog /></div>
                     <h3>Native Integration</h3>
                     <p>Fetches your assigned GitHub issues automatically. No manual entry.</p>
                 </div>
                 <div className="glass-card">
-                    <div className="icon-circle">📊</div>
+                    <div className="icon-circle"><BsGraphUp /></div>
                     <h3>Deep Analytics</h3>
                     <p>Beautiful charts show exactly where your time goes each week.</p>
                 </div>
                 <div className="glass-card">
-                    <div className="icon-circle">📄</div>
+                    <div className="icon-circle"><RiFilePaper2Fill /></div>
                     <h3>Audit-Ready Reporting</h3>
                     <p>Generate CSV and PDF reports with a single click.</p>
                 </div>
