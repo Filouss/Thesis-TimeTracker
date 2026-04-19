@@ -43,7 +43,7 @@ export function SessionCard({
         <>
         <div className="labels-row">
             {(() => {
-              const maxChars = 30;
+              const maxChars = 25;
               let currentChars = 0;
               const displayedLabels = [];
               let remaining = 0;
