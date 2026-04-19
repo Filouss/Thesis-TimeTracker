@@ -19,9 +19,6 @@ public class Repository {
     @Column
     private String name;
 
-    @Column(unique=true)
-    private long GitHub_ID;
-
     @OneToMany(mappedBy = "repository", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Issue> issues;
 
@@ -41,14 +38,6 @@ public class Repository {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public long getGitHub_ID() {
-        return GitHub_ID;
-    }
-
-    public void setGitHub_ID(long gitHub_ID) {
-        GitHub_ID = gitHub_ID;
     }
 
     public Set<Issue> getIssues() {
