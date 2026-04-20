@@ -3,12 +3,19 @@ import GitHubLogo from "../assets/GitHub_Invertocat_Black_Clearspace.svg"
 import { IoIosCog } from "react-icons/io";
 import { BsGraphUp } from "react-icons/bs";
 import { RiFilePaper2Fill } from "react-icons/ri";
+import { useEffect } from "react";
 
 export default function LandingPage() {
     async function startLoginFlow() {
-        await fetch("/actuator/health", { credentials: "include" });
         window.location.href = (import.meta.env.VITE_API_BASE_URL || "/api") + "/oauth2/authorization/github";
     }
+
+    useEffect(() => {
+        fetch("/api/users/me", {
+            cache: "no-store",
+            credentials: "include"
+        }).catch(() => {});
+    }, []);
 
     return (
         <div className="landing-container">
