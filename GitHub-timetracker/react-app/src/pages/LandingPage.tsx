@@ -11,9 +11,8 @@ export default function LandingPage() {
     }
 
     useEffect(() => {
-        fetch("/api/users/me", {
-            cache: "no-store",
-            credentials: "include"
+        fetch("https://time-tracker-api-0any.onrender.com/actuator/health", { 
+            mode: 'no-cors' 
         }).catch(() => {});
     }, []);
 
