@@ -6,7 +6,7 @@ import { RiFilePaper2Fill } from "react-icons/ri";
 
 export default function LandingPage() {
     async function startLoginFlow() {
-        await fetch("/api/actuator/health", { credentials: "include" });
+        await fetch("/actuator/health", { credentials: "include" });
         window.location.href = (import.meta.env.VITE_API_BASE_URL || "/api") + "/oauth2/authorization/github";
     }
 
