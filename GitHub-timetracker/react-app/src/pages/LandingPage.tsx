@@ -4,9 +4,9 @@ import { IoIosCog } from "react-icons/io";
 import { BsGraphUp } from "react-icons/bs";
 import { RiFilePaper2Fill } from "react-icons/ri";
 
-
 export default function LandingPage() {
-    function startLoginFlow() {
+    async function startLoginFlow() {
+        await fetch("/api/actuator/health", { credentials: "include" });
         window.location.href = (import.meta.env.VITE_API_BASE_URL || "/api") + "/oauth2/authorization/github";
     }
 
