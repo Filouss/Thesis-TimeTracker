@@ -71,7 +71,7 @@ export function useExportActions(){
 
     autoTable(doc, {
         startY: 40,
-        head: [['Issue', 'Repository', 'Duration (s)', 'Date of creation']],
+        head: [['Issue', 'Repository', 'Duration', 'Date of creation']],
         body: data.map(item => [
             item.issueTitle, 
             item.repoName, 
