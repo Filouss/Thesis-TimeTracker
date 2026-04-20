@@ -7,7 +7,7 @@ import { RiFilePaper2Fill } from "react-icons/ri";
 
 export default function LandingPage() {
     function startLoginFlow() {
-        window.location.href = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8080") + "/oauth2/authorization/github";
+        window.location.href = (import.meta.env.VITE_API_BASE_URL || "/api") + "/oauth2/authorization/github";
     }
 
     return (
