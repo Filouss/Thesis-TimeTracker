@@ -23,6 +23,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: password
       DEV_GITHUB_CLIENT_ID: ${DEV_GITHUB_CLIENT_ID}
       DEV_GITHUB_CLIENT_SECRET: ${DEV_GITHUB_CLIENT_SECRET}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GITHUB_REDIRECT_URI: http://localhost:3000/api/login/oauth2/code/github
     depends_on:
       - postgres
 
@@ -33,6 +34,7 @@ services:
       - "3000:80"
     depends_on:
        - springboot-api
-
+    environment:
+       - BACKEND_URL=http://springboot-api:8080/
 volumes:
   pgdata:

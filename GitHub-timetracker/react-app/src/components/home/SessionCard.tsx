@@ -17,6 +17,9 @@ export function SessionCard({
 }: SessionCardProps) {
   const issue = session.issue;
   const [isSyncing, setIsSyncing] = useState(false);
+  const sortedLabels = [...(issue.labels || [])].sort((left, right) =>
+    left.name.localeCompare(right.name, undefined, { sensitivity: "base" })
+  );
 
   return (
     <BaseCard
@@ -48,7 +51,7 @@ export function SessionCard({
               const displayedLabels = [];
               let remaining = 0;
 
-              for (const label of issue.labels || []) {
+              for (const label of sortedLabels) {
                 if (displayedLabels.length === 0 || currentChars + label.name.length <= maxChars) {
                   displayedLabels.push(label);
                   currentChars += label.name.length;
