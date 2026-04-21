@@ -5,6 +5,9 @@ html, body {
     font-family: "Red Hat Display", sans-serif;
 }
 
+body{
+  background-color: #121212;
+}
 
 .app-content-wrapper {
     color: rgb(247, 247, 247);
@@ -17,7 +20,6 @@ html, body {
     flex-direction: column;
     gap: 20px;
     background-color: #121212;
-    overflow: hidden;
 }
 
 
