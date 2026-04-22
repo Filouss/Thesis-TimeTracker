@@ -66,6 +66,8 @@ public class SessionService {
         if (user.isTracking()) {
             try {
                 endSession(user, null);
+                sessionDAO.flush(); 
+                userDAO.flush();
             } catch (NotActiveException e) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "No active session");
             }
