@@ -16,7 +16,7 @@
   background: rgb(22, 27, 34);
   padding: 24px;
   border-radius: 10px;
-  width: 400px;
+  min-width: 400px;
   max-width: 90%;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
@@ -35,7 +35,7 @@
 
 /* Edit Session Modal Styles */
 .edit-modal {
-  width: 600px;
+  min-width: 600px;
   max-width: 95%;
 }
 
