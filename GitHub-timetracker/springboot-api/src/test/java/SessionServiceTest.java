@@ -24,6 +24,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -46,6 +47,8 @@ import cz.cvut.fel.thesis.dao.SessionDAO;
 import cz.cvut.fel.thesis.dao.TimeBlockDAO;
 import cz.cvut.fel.thesis.dao.UserDAO;
 import cz.cvut.fel.thesis.dto.CommentDTO;
+import cz.cvut.fel.thesis.dto.DailyTimeTrackDTO;
+import cz.cvut.fel.thesis.dto.ExportItem;
 import cz.cvut.fel.thesis.dto.GitHubIssueDTO;
 import cz.cvut.fel.thesis.dto.GitHubUserDTO;
 import cz.cvut.fel.thesis.dto.IssueRankDTO;
@@ -447,8 +450,7 @@ public class SessionServiceTest {
             when(issueRequest.repoOwner()).thenReturn("testOwner");
 
             when(sessionDAO.findByIdAndUser(sessionId, testUser)).thenReturn(Optional.of(testSession));
-            
-            // Příprava validního Issue
+
             GitHubUserDTO assignee = new GitHubUserDTO(1L,"testUser");
             GitHubIssueDTO fetchedIssue = new GitHubIssueDTO(
                     999L, 42, "Title", "open", "Body", 
@@ -487,8 +489,7 @@ public class SessionServiceTest {
             UpdateSessionRequest updateRequest = mock(UpdateSessionRequest.class);
             UpdateIssueRequest issueRequest = mock(UpdateIssueRequest.class);
             when(updateRequest.issue()).thenReturn(issueRequest);
-            
-            // Nasimulujeme, že Session v DB neexistuje, nebo nepatří tomuto uživateli
+
             when(sessionDAO.findByIdAndUser(999L, testUser)).thenReturn(Optional.empty());
 
             // ACT
@@ -592,6 +593,98 @@ public class SessionServiceTest {
             // ASSERT
             assertFalse(result);
         }
+
+        @Test
+        void getSessionDTOsForIssue_FiltersOnlyFinishedSessions() {
+            // ARRANGE
+            Session finished = new Session();
+            finished.setId(1L);
+            finished.setFinished(true);
+            finished.setSynced(false);
+            finished.setIssue(testIssue);
+            finished.setTimeBlocks(new ArrayList<>());
+
+            Session unfinished = new Session();
+            unfinished.setId(2L);
+            unfinished.setFinished(false);
+            unfinished.setIssue(testIssue);
+            unfinished.setTimeBlocks(new ArrayList<>());
+
+            when(sessionDAO.findByIssueAndUser(eq(testIssue), eq(testUser), any()))
+                    .thenReturn(List.of(finished, unfinished));
+
+            // ACT
+            List<SessionDTO> result = sessionService.getSessionDTOsForIssue(testIssue, testUser, null, null);
+
+            // ASSERT
+            assertEquals(1, result.size());
+            assertEquals(1L, result.get(0).id());
+        }
+
+
+
+        @Test
+        void getExportData_MapsSessionsIntoExportItems() {
+            // ARRANGE
+            ZoneId zone = ZoneId.of("UTC");
+
+            Repository repo = new Repository();
+            repo.setName("GitHub-timetracker");
+            repo.setOwner("testOwner");
+
+            Issue issue = new Issue();
+            issue.setTitle("Implement export endpoint");
+            issue.setRepository(repo);
+
+            Session exportSession = new Session();
+            exportSession.setIssue(issue);
+            exportSession.setCreatedAt(Instant.parse("2026-04-21T09:05:00Z"));
+            exportSession.setTimeTracked(5400L);
+
+            when(sessionDAO.findSessionsForExport(eq(testUser), eq("GitHub-timetracker"), eq("Implement"), any(), any()))
+                    .thenReturn(List.of(exportSession));
+
+            // ACT
+            List<ExportItem> result = sessionService.getExportData(testUser, "Implement", "GitHub-timetracker", "ThisWeek", zone);
+
+            // ASSERT
+            assertEquals(1, result.size());
+            ExportItem row = result.get(0);
+            assertEquals("Implement export endpoint", row.issueTitle());
+            assertEquals("GitHub-timetracker", row.repoName());
+            assertEquals(5400L, row.timeTracked());
+            assertEquals("2026-04-21 09:05", row.createdAt());
+        }
+
+        @Test
+        void getAllSyncedByIssueGithubIds_ReturnsEmptyMapForEmptyInput() {
+            // ACT
+            Map<Long, Boolean> result = sessionService.getAllSyncedByIssueGithubIds(testUser, Set.of());
+
+            // ASSERT
+            assertTrue(result.isEmpty());
+            verify(sessionDAO, never()).countUnsyncedFinishedByIssueGithubIds(any(), any());
+        }
+
+        @Test
+        void getAllSyncedByIssueGithubIds_DefaultsToTrueThenOverridesFromQueryRows() {
+            // ARRANGE
+            Set<Long> githubIds = Set.of(11L, 22L, 33L);
+            when(sessionDAO.countUnsyncedFinishedByIssueGithubIds(testUser, githubIds)).thenReturn(List.of(
+                    new Object[] { 11L, 2L },
+                    new Object[] { 22L, 0L },
+                    new Object[] { 33L, null }));
+
+            // ACT
+            Map<Long, Boolean> result = sessionService.getAllSyncedByIssueGithubIds(testUser, githubIds);
+
+            // ASSERT
+            assertEquals(3, result.size());
+            assertFalse(result.get(11L));
+            assertTrue(result.get(22L));
+            assertTrue(result.get(33L));
+        }
+
     }
 
 
@@ -616,7 +709,7 @@ public class SessionServiceTest {
             Float ratio = sessionService.getWorkingTimeRatio(testUser, "Today", ZoneId.of("UTC"));
 
             // ASSERT
-            assertEquals(0.0f, ratio, "Poměr by měl být 0 a kód nesmí spadnout na dělení nulou");
+            assertEquals(0.0f, ratio, "Ratio should be 0");
         }
 
         @Test
@@ -630,7 +723,73 @@ public class SessionServiceTest {
             Long result = sessionService.secondsTrackedForInterval(testUser, "ThisWeek", zone);
 
             // ASSERT
-            assertEquals(3600L, result, "Měla by se započítat jen dnešní session");
+            assertEquals(3600L, result);
+        }
+
+        @Test
+        void getTrackedSecondsByIssueGithubIds_ReturnsEmptyMapForEmptyInput() {
+            // ACT
+            Map<Long, Long> result = sessionService.getTrackedSecondsByIssueGithubIds(testUser, Set.of());
+
+            // ASSERT
+            assertTrue(result.isEmpty());
+            verify(sessionDAO, never()).getTrackedSecondsByIssueGithubIds(any(), any());
+        }
+
+        @Test
+        void getTrackedSecondsByIssueGithubIds_MapsRowsAndNormalizesNullToZero() {
+            // ARRANGE
+            Set<Long> githubIds = Set.of(101L, 202L);
+            when(sessionDAO.getTrackedSecondsByIssueGithubIds(testUser, githubIds))
+                    .thenReturn(List.of(new Object[] { 101L, 3600L }, new Object[] { 202L, null }));
+
+            // ACT
+            Map<Long, Long> result = sessionService.getTrackedSecondsByIssueGithubIds(testUser, githubIds);
+
+            // ASSERT
+            assertEquals(2, result.size());
+            assertEquals(3600L, result.get(101L));
+            assertEquals(0L, result.get(202L));
+        }
+
+        @Test
+        void secondsTrackedPerDayThisWeek_AggregatesSecondsPerWeekday() {
+            // ARRANGE
+            ZoneId zone = ZoneId.of("UTC");
+
+            Session monday = new Session();
+            monday.setCreatedAt(Instant.parse("2026-04-20T10:00:00Z"));
+            monday.setTimeTracked(3600L);
+
+            Session tuesday = new Session();
+            tuesday.setCreatedAt(Instant.parse("2026-04-21T10:00:00Z"));
+            tuesday.setTimeTracked(1800L);
+
+            when(sessionDAO.findFinishedSessionsInInterval(eq(testUser), any(), any()))
+                    .thenReturn(List.of(monday, tuesday));
+
+            // ACT
+            List<DailyTimeTrackDTO> result = sessionService.secondsTrackedPerDayThisWeek(testUser, zone);
+
+            // ASSERT
+            assertEquals(7, result.size());
+
+            DailyTimeTrackDTO mondayRow = result.stream()
+                    .filter(r -> r.weekDay().equals("Monday"))
+                    .findFirst()
+                    .orElseThrow();
+            DailyTimeTrackDTO tuesdayRow = result.stream()
+                    .filter(r -> r.weekDay().equals("Tuesday"))
+                    .findFirst()
+                    .orElseThrow();
+            DailyTimeTrackDTO sundayRow = result.stream()
+                    .filter(r -> r.weekDay().equals("Sunday"))
+                    .findFirst()
+                    .orElseThrow();
+
+            assertEquals(3600L, mondayRow.secondsTracked());
+            assertEquals(1800L, tuesdayRow.secondsTracked());
+            assertEquals(0L, sundayRow.secondsTracked());
         }
     }
 }
